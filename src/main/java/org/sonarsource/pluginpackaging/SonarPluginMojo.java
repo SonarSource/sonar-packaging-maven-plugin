@@ -25,6 +25,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -52,7 +53,6 @@ import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.util.FileUtils;
-import org.sonar.updatecenter.common.FormatUtils;
 
 import static java.lang.String.format;
 
@@ -62,6 +62,7 @@ import static java.lang.String.format;
 @Mojo(name = "sonar-plugin", requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
 public class SonarPluginMojo extends AbstractSonarMojo {
 
+  private static final String DATETIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ssZ";
   private static final String LIB_DIR = "META-INF/lib/";
   private static final String[] DEFAULT_EXCLUDES = new String[] {"**/package.html"};
   private static final String[] DEFAULT_INCLUDES = new String[] {"**/**"};
@@ -143,7 +144,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.ORGANIZATION_URL, getPluginOrganizationUrl());
       addManifestProperty(PluginManifestProperty.TERMS_CONDITIONS_URL, getPluginTermsConditionsUrl());
       addManifestProperty(PluginManifestProperty.ISSUE_TRACKER_URL, getPluginIssueTrackerUrl());
-      addManifestProperty(PluginManifestProperty.BUILD_DATE, FormatUtils.toString(new Date(), true));
+      addManifestProperty(PluginManifestProperty.BUILD_DATE, new SimpleDateFormat(DATETIME_PATTERN).format(new Date()));
       addManifestProperty(PluginManifestProperty.SOURCES_URL, getPluginSourcesUrl());
       addManifestProperty(PluginManifestProperty.DEVELOPERS, getDevelopers());
       getLog().info(logLine);
