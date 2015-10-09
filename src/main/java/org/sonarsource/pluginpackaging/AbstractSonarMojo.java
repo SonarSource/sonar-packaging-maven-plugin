@@ -87,7 +87,7 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Component
   protected MavenProjectHelper projectHelper;
 
-  @Parameter(property = "sonar.pluginKey", required = true, defaultValue = "${project.artifactId}")
+  @Parameter(property = "sonar.pluginKey", defaultValue = "${project.artifactId}", required = true)
   protected String pluginKey;
 
   @Parameter(property = "sonar.pluginTermsConditionsUrl")
@@ -96,13 +96,13 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter(property = "sonar.pluginClass", required = true)
   private String pluginClass;
 
-  @Parameter(property = "sonar.pluginName", required = true, defaultValue = "${project.name}")
+  @Parameter(property = "sonar.pluginName", defaultValue = "${project.name}", required = true)
   private String pluginName;
 
   @Parameter(property = "sonar.requirePlugins")
   protected String requirePlugins;
 
-  @Parameter(property = "sonar.pluginDescription", required = true, defaultValue = "${project.description}")
+  @Parameter(property = "sonar.pluginDescription", defaultValue = "${project.description}", required = true)
   private String pluginDescription;
 
   @Parameter(property = "sonar.pluginSourcesUrl", defaultValue = "${project.scm.url}")

@@ -29,7 +29,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import static java.lang.String.format;
 
-@Mojo(name = "check", requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true)
+@Mojo(name = "check", defaultPhase = LifecyclePhase.INITIALIZE, requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
 public class CheckMojo extends AbstractSonarMojo {
 
   private static final String[] UNSUPPORTED_GROUP_IDS = {"org.apache.logging.log4j", "log4j", "commons-logging"};

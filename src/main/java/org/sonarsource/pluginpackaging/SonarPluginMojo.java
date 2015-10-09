@@ -59,7 +59,7 @@ import static java.lang.String.format;
 /**
  * Build a SonarQube Plugin from the current project.
  */
-@Mojo(name = "sonar-plugin", requiresDependencyResolution = ResolutionScope.RUNTIME, defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
+@Mojo(name = "sonar-plugin", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
 public class SonarPluginMojo extends AbstractSonarMojo {
 
   private static final String DATETIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ssZ";
