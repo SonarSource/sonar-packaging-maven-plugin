@@ -264,7 +264,7 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   }
 
   @CheckForNull
-  protected final Artifact getPluginApiArtifact() {
+  protected final Artifact getNullablePluginApiArtifact() {
     Set<Artifact> dependencies = getDependencyArtifacts();
     if (dependencies != null) {
       for (Artifact dep : dependencies) {
@@ -275,5 +275,13 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
       }
     }
     return null;
+  }
+
+  protected final Artifact getPluginApiArtifact() {
+    Artifact result = getNullablePluginApiArtifact();
+    if (result == null) {
+      throw new IllegalStateException("Plugin API is not declared");
+    }
+    return result;
   }
 }

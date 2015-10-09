@@ -59,7 +59,7 @@ public class CheckMojo extends AbstractSonarMojo {
   }
 
   private void checkRequiredApi() throws MojoExecutionException {
-    Artifact api = getPluginApiArtifact();
+    Artifact api = getNullablePluginApiArtifact();
     if (api == null || !Artifact.SCOPE_PROVIDED.equals(api.getScope())) {
       throw new MojoExecutionException(
         SONAR_PLUGIN_API_ARTIFACTID + " must be declared in dependencies with scope <provided>");
