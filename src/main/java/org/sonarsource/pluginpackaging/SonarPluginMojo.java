@@ -147,8 +147,6 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.BUILD_DATE, new SimpleDateFormat(DATETIME_PATTERN).format(new Date()));
       addManifestProperty(PluginManifestProperty.SOURCES_URL, getPluginSourcesUrl());
       addManifestProperty(PluginManifestProperty.DEVELOPERS, getDevelopers());
-      getLog().info(logLine);
-
       if (isSkipDependenciesPackaging()) {
         getLog().info("Skip packaging of dependencies");
 
@@ -159,6 +157,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
           addManifestProperty(PluginManifestProperty.DEPENDENCIES, StringUtils.join(libs, " "));
         }
       }
+      getLog().info(logLine);
       archiver.createArchive(getSession(), getProject(), archive);
       return jarFile;
 
@@ -257,7 +256,6 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       boolean provided;
       if (dependency.getParent() != null) {
         // - Skip check on root node - see SONAR-1815
-        // -
         provided = isParentProvided ||
           ("org.codehaus.sonar".equals(dependency.getArtifact().getGroupId()) && !Artifact.SCOPE_TEST.equals(dependency.getArtifact().getScope()));
       } else {
