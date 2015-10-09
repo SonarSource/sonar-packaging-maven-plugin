@@ -113,6 +113,11 @@
     <profile>
       <!-- integration tests -->
       <id>run-its</id>
+      <activation>
+        <property>
+          <name>run-its</name>
+        </property>
+      </activation>
       <build>
         <plugins>
           <plugin>
