@@ -54,6 +54,7 @@ import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.util.FileUtils;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
 /**
@@ -180,7 +181,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
         Iterables.transform(getProject().getDevelopers(), new Function<Developer, String>() {
           @Override
           public String apply(Developer developer) {
-            return developer.getName();
+            return checkNotNull(developer.getName(), "Developer name must not be null");
           }
         }));
     }
