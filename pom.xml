@@ -15,6 +15,8 @@
   <name>SonarQube :: Packaging Maven Plugin</name>
 
   <properties>
+    <!-- used for deployment to SonarSource Artifactory -->
+    <gitRepositoryName>sonar-packaging-maven-plugin</gitRepositoryName>
     <mavenVersion>3.0.5</mavenVersion>
   </properties>
 
