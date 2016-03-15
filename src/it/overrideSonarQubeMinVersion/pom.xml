@@ -10,10 +10,6 @@
   <name>Package dependencies</name>
   <description>Package dependencies</description>
 
-  <properties>
-    <sonar.qubeMinVersion>5.1</sonar.qubeMinVersion>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.sonarsource.sonarqube</groupId>
@@ -33,6 +29,7 @@
         <configuration>
           <pluginKey>newkey</pluginKey>
           <pluginClass>org.sonar.plugins.sample.SamplePlugin</pluginClass>
+          <sonarQubeMinVersion>5.1</sonarQubeMinVersion>
         </configuration>
       </plugin>
       <plugin>

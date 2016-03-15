@@ -53,8 +53,8 @@ import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.util.FileUtils;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
 /**
@@ -139,7 +139,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader()));
       addManifestProperty(PluginManifestProperty.BASE_PLUGIN, getBasePlugin());
       addManifestProperty(PluginManifestProperty.HOMEPAGE, getPluginUrl());
-      addManifestProperty(PluginManifestProperty.SONAR_VERSION, firstNonNull(getQubeMinVersion(), getPluginApiArtifact().getVersion()));
+      addManifestProperty(PluginManifestProperty.SONAR_VERSION, firstNonNull(getSonarQubeMinVersion(), getPluginApiArtifact().getVersion()));
       addManifestProperty(PluginManifestProperty.LICENSE, getLicensing());
       addManifestProperty(PluginManifestProperty.ORGANIZATION, getPluginOrganizationName());
       addManifestProperty(PluginManifestProperty.ORGANIZATION_URL, getPluginOrganizationUrl());
