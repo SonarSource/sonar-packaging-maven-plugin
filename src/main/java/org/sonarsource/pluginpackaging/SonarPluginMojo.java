@@ -293,7 +293,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     String suffix;
     if (StringUtils.isBlank(classifier)) {
       suffix = "";
-    } else if (classifier.startsWith("-")) {
+    } else if (classifier.charAt(0) == '-') {
       suffix = classifier;
     } else {
       suffix = "-" + classifier;
