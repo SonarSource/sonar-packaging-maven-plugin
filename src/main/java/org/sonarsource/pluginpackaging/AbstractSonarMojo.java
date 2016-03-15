@@ -99,6 +99,9 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter(property = "sonar.pluginName", defaultValue = "${project.name}", required = true)
   private String pluginName;
 
+  @Parameter()
+  private String sonarQubeMinVersion;
+
   @Parameter(property = "sonar.requirePlugins")
   protected String requirePlugins;
 
@@ -173,6 +176,11 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
 
   protected final String getPluginName() {
     return pluginName;
+  }
+
+  @CheckForNull
+  protected final String getSonarQubeMinVersion() {
+    return sonarQubeMinVersion;
   }
 
   @CheckForNull
