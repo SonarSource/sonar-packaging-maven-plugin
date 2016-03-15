@@ -21,7 +21,6 @@ package org.sonarsource.pluginpackaging;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +54,7 @@ import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.util.FileUtils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.lang.String.format;
 
 /**
@@ -139,7 +139,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader()));
       addManifestProperty(PluginManifestProperty.BASE_PLUGIN, getBasePlugin());
       addManifestProperty(PluginManifestProperty.HOMEPAGE, getPluginUrl());
-      addManifestProperty(PluginManifestProperty.SONAR_VERSION, getPluginApiArtifact().getVersion());
+      addManifestProperty(PluginManifestProperty.SONAR_VERSION, firstNonNull(getQubeMinVersion(), getPluginApiArtifact().getVersion()));
       addManifestProperty(PluginManifestProperty.LICENSE, getLicensing());
       addManifestProperty(PluginManifestProperty.ORGANIZATION, getPluginOrganizationName());
       addManifestProperty(PluginManifestProperty.ORGANIZATION_URL, getPluginOrganizationUrl());
@@ -168,7 +168,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   }
 
   private void addManifestProperty(PluginManifestProperty property, @Nullable Object value) {
-    getLog().info(format("    %s: %s", property.getLabel(), MoreObjects.firstNonNull(value, "")));
+    getLog().info(format("    %s: %s", property.getLabel(), firstNonNull(value, "")));
     if (value != null) {
       archive.addManifestEntry(property.getKey(), value.toString());
     }
@@ -252,7 +252,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return result;
   }
 
-  private static void searchForSonarProvidedArtifacts(DependencyNode dependency, Set<Artifact> sonarArtifacts, boolean isParentProvided) {
+  private static void searchForSonarProvidedArtifacts(@Nullable DependencyNode dependency, Set<Artifact> sonarArtifacts, boolean isParentProvided) {
     if (dependency != null) {
       boolean provided;
       if (dependency.getParent() != null) {

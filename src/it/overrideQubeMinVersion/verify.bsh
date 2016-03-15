@@ -1,0 +1,23 @@
+import java.io.*;
+import java.util.zip.*;
+import java.util.jar.Manifest;
+
+File file = new File( basedir, "target/test-1.0.jar" );
+if ( !file.isFile() )
+{
+    throw new FileNotFoundException( "Could not find generated JAR: " + file );
+}
+
+ZipFile zipFile = new ZipFile(file);
+InputStream input = null;
+try {
+  input = zipFile.getInputStream(zipFile.getEntry("META-INF/MANIFEST.MF"));
+  Manifest manifest = new Manifest(input);
+  String minVersion = manifest.getMainAttributes().getValue("Sonar-Version");
+  if (!minVersion.equals("5.1")) {
+    throw new Exception("SonarQube min version is not correct: " + minVersion);
+  }
+} finally {
+  zipFile.close();
+  input.close();
+}
