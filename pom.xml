@@ -113,11 +113,11 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.7.6.201602180812</version>
-        <configuration>
-          <includes>
-            <include>org.sonarsource.pluginpackaging.*</include>
-          </includes>
-        </configuration>
+        <!--<configuration>-->
+        <!--<includes>-->
+        <!--<include>org.sonarsource.pluginpackaging.*</include>-->
+        <!--</includes>-->
+        <!--</configuration>-->
         <executions>
           <execution>
             <id>pre-unit-test</id>
