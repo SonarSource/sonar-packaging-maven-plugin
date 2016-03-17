@@ -19,7 +19,7 @@
     <gitRepositoryName>sonar-packaging-maven-plugin</gitRepositoryName>
     <mavenVersion>3.0.5</mavenVersion>
     <sonar.exclusions>target/generated-sources/**/*</sonar.exclusions>
-    <invoker.localRepositoryPath>${project.build.directory}/it-repo</invoker.localRepositoryPath>
+    <invoker.localRepositoryPath>${settings.localRepository}</invoker.localRepositoryPath>
   </properties>
 
   <dependencies>
