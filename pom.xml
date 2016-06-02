@@ -14,6 +14,17 @@
   <packaging>maven-plugin</packaging>
   <name>SonarQube :: Packaging Maven Plugin</name>
 
+  <scm>
+    <connection>scm:git:git@github.com:SonarSource/sonar-packaging-maven-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:SonarSource/sonar-packaging-maven-plugin.git</developerConnection>
+    <url>https://github.com/SonarSource/sonar-packaging-maven-plugin</url>
+    <tag>HEAD</tag>
+  </scm>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://jira.sonarsource.com/browse/PACKMP</url>
+  </issueManagement>
+
   <properties>
     <!-- used for deployment to SonarSource Artifactory -->
     <gitRepositoryName>sonar-packaging-maven-plugin</gitRepositoryName>
