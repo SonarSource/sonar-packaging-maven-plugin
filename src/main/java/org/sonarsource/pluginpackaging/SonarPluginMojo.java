@@ -136,6 +136,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.VERSION, getProject().getVersion());
       addManifestProperty(PluginManifestProperty.MAIN_CLASS, getPluginClass());
       addManifestProperty(PluginManifestProperty.REQUIRE_PLUGINS, getRequiredPlugins());
+      addManifestProperty(PluginManifestProperty.SONARLINT_SUPPORTED, isSonarLintSupported());
       addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader()));
       addManifestProperty(PluginManifestProperty.BASE_PLUGIN, getBasePlugin());
       addManifestProperty(PluginManifestProperty.HOMEPAGE, getPluginUrl());

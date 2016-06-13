@@ -36,6 +36,7 @@ public enum PluginManifestProperty {
   BUILD_DATE("Plugin-BuildDate", "Build date"),
   ISSUE_TRACKER_URL("Plugin-IssueTrackerUrl", "Issue Tracker URL"),
   REQUIRE_PLUGINS("Plugin-RequirePlugins", "Required Plugins"),
+  SONARLINT_SUPPORTED("SonarLint-Supported", "Does the plugin support SonarLint?"),
   USE_CHILD_FIRST_CLASSLOADER("Plugin-ChildFirstClassLoader", "Use Child-first ClassLoader"),
   BASE_PLUGIN("Plugin-Base", "Base Plugin"),
   SOURCES_URL("Plugin-SourcesUrl", "Sources URL"),

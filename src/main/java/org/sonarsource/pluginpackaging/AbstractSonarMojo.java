@@ -96,6 +96,9 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter(property = "sonar.pluginClass", required = true)
   private String pluginClass;
 
+  @Parameter(property = "sonar.sonarLintSupported", defaultValue = "false")
+  private boolean sonarLintSupported;
+
   @Parameter(property = "sonar.pluginName", defaultValue = "${project.name}", required = true)
   private String pluginName;
 
@@ -172,6 +175,10 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
 
   protected final String getPluginClass() {
     return pluginClass;
+  }
+
+  protected final boolean isSonarLintSupported() {
+    return sonarLintSupported;
   }
 
   protected final String getPluginName() {
