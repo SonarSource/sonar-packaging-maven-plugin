@@ -1,0 +1,23 @@
+import java.io.*;
+import java.util.zip.*;
+import java.util.jar.Manifest;
+
+File file = new File( basedir, "target/sonar-it-display-version-plugin-1.0.0.42.jar" );
+if ( !file.isFile() )
+{
+    throw new FileNotFoundException( "Could not find generated JAR: " + file );
+}
+
+ZipFile zipFile = new ZipFile(file);
+InputStream input = null;
+try {
+  input = zipFile.getInputStream(zipFile.getEntry("META-INF/MANIFEST.MF"));
+  Manifest manifest = new Manifest(input);
+  String displayVersion = manifest.getMainAttributes().getValue("Plugin-Display-Version");
+  if (!"1.0 (build 42)".equals(displayVersion)) {
+    throw new Exception("Missing Plugin-Display-Version attribute");
+  }
+} finally {
+  zipFile.close();
+  input.close();
+}

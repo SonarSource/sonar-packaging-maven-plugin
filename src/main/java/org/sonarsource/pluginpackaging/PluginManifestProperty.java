@@ -29,6 +29,7 @@ public enum PluginManifestProperty {
   ORGANIZATION_URL("Plugin-OrganizationUrl", "Organization URL"),
   LICENSE("Plugin-License", "Licensing"),
   VERSION("Plugin-Version", "Version"),
+  DISPLAY_VERSION("Plugin-Display-Version", "Display Version"),
   SONAR_VERSION("Sonar-Version", "Minimal SonarQube Version"),
   DEPENDENCIES("Plugin-Dependencies", "Dependencies"),
   HOMEPAGE("Plugin-Homepage", "Homepage URL"),

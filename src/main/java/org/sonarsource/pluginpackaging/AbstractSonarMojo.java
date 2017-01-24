@@ -93,6 +93,9 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter(property = "sonar.pluginTermsConditionsUrl")
   private URL pluginTermsConditionsUrl;
 
+  @Parameter(property = "sonar.pluginDisplayVersion")
+  private String pluginDisplayVersion;
+
   @Parameter(property = "sonar.pluginClass", required = true)
   private String pluginClass;
 
@@ -171,6 +174,10 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
 
   protected final String getPluginKey() {
     return PluginKeyUtils.sanitize(pluginKey);
+  }
+
+  protected final String getPluginDisplayVersion() {
+    return pluginDisplayVersion == null ? getProject().getVersion() : pluginDisplayVersion;
   }
 
   protected final String getPluginClass() {
