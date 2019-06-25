@@ -51,6 +51,10 @@
         <artifactId>@project.artifactId@</artifactId>
         <version>@project.version@</version>
         <extensions>true</extensions>
+        <configuration>
+          <pluginClass>org.sonar.plugins.sample.SamplePlugin</pluginClass>
+          <useChildFirstClassLoader>true</useChildFirstClassLoader>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

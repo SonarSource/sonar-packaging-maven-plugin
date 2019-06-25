@@ -1,7 +1,22 @@
 import java.io.*;
+import java.nio.*;
+import java.nio.file.*;
 
-File file = new File( basedir, "target/test-1.0.jar" );
-if ( !file.isFile() )
-{
-    throw new FileNotFoundException( "Could not find generated JAR: " + file );
+String expected = "[WARNING] Property 'useChildFirstClassLoader' is deprecated";
+
+File log = new File( basedir, "build.log" );
+if ( !log.isFile() ) {
+    throw new FileNotFoundException( "Could not find log file: " + log );
 }
+
+boolean found = false;
+for (String line : Files.readAllLines(log.toPath())) {
+  if (line.equals(expected)) {
+      found = true;
+  }
+}
+
+if (!found) {
+  throw new Exception("Warning not logged");
+}
+

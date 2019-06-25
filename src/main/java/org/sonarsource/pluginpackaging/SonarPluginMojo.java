@@ -19,7 +19,6 @@
  */
 package org.sonarsource.pluginpackaging;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import java.io.File;
@@ -39,7 +38,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.model.Developer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -138,7 +136,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.MAIN_CLASS, getPluginClass());
       addManifestProperty(PluginManifestProperty.REQUIRE_PLUGINS, getRequiredPlugins());
       addManifestProperty(PluginManifestProperty.SONARLINT_SUPPORTED, isSonarLintSupported());
-      addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader()));
+      addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader() != null ? isUseChildFirstClassLoader() : false));
       addManifestProperty(PluginManifestProperty.BASE_PLUGIN, getBasePlugin());
       addManifestProperty(PluginManifestProperty.HOMEPAGE, getPluginUrl());
       addManifestProperty(PluginManifestProperty.SONAR_VERSION, firstNonNull(getSonarQubeMinVersion(), getPluginApiArtifact().getVersion()));
@@ -150,6 +148,9 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.BUILD_DATE, new SimpleDateFormat(DATETIME_PATTERN).format(new Date()));
       addManifestProperty(PluginManifestProperty.SOURCES_URL, getPluginSourcesUrl());
       addManifestProperty(PluginManifestProperty.DEVELOPERS, getDevelopers());
+      if (isUseChildFirstClassLoader() != null) {
+        getLog().warn("Property 'useChildFirstClassLoader' is deprecated");
+      }
       if (isSkipDependenciesPackaging()) {
         getLog().info("Skip packaging of dependencies");
 
@@ -180,12 +181,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   private String getDevelopers() {
     if (getProject().getDevelopers() != null) {
       return Joiner.on(",").join(
-        Iterables.transform(getProject().getDevelopers(), new Function<Developer, String>() {
-          @Override
-          public String apply(Developer developer) {
-            return checkNotNull(developer.getName(), "Developer name must not be null");
-          }
-        }));
+        Iterables.transform(getProject().getDevelopers(), developer -> checkNotNull(developer.getName(), "Developer name must not be null")));
     }
     return null;
   }
