@@ -11,6 +11,11 @@
   <name>Do not package dependencies provided by Sonar</name>
   <description>Do not package dependencies provided by Sonar</description>
 
+  <properties>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.codehaus.sonar</groupId>
