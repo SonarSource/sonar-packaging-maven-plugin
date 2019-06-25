@@ -129,8 +129,8 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project.issueManagement.url}")
   private URL pluginIssueTrackerUrl;
 
-  @Parameter(property = "sonar.useChildFirstClassLoader", defaultValue = "false")
-  private boolean useChildFirstClassLoader;
+  @Parameter(property = "sonar.useChildFirstClassLoader")
+  private Boolean useChildFirstClassLoader;
 
   @Parameter(property = "sonar.basePlugin")
   private String basePlugin;
@@ -250,7 +250,8 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
     return pluginIssueTrackerUrl;
   }
 
-  protected final boolean isUseChildFirstClassLoader() {
+  @CheckForNull
+  protected final Boolean isUseChildFirstClassLoader() {
     return useChildFirstClassLoader;
   }
 
