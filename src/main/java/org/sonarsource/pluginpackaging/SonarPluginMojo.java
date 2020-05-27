@@ -148,6 +148,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.BUILD_DATE, new SimpleDateFormat(DATETIME_PATTERN).format(new Date()));
       addManifestProperty(PluginManifestProperty.SOURCES_URL, getPluginSourcesUrl());
       addManifestProperty(PluginManifestProperty.DEVELOPERS, getDevelopers());
+      addManifestProperty(PluginManifestProperty.JRE_MIN_VERSION, getJreMinVersion());
       if (isUseChildFirstClassLoader() != null) {
         getLog().warn("Property 'useChildFirstClassLoader' is deprecated");
       }
