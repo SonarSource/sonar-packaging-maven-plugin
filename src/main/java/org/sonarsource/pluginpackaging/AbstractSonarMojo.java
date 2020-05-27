@@ -141,6 +141,9 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter(property = "sonar.addMavenDescriptor", defaultValue = "true")
   private boolean addMavenDescriptor;
 
+  @Parameter
+  private String jreMinVersion;
+
   protected final MavenProject getProject() {
     return project;
   }
@@ -215,6 +218,11 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @CheckForNull
   protected final String getRequiredPlugins() {
     return requirePlugins;
+  }
+
+  @CheckForNull
+  protected String getJreMinVersion() {
+    return jreMinVersion;
   }
 
   protected final String getLicensing() {
