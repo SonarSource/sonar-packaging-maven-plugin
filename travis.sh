@@ -4,9 +4,13 @@ set -euo pipefail
 
 function configureTravis {
   mkdir -p ~/.local
-  curl -sSL https://github.com/SonarSource/travis-utils/tarball/v57 | tar zx --strip-components 1 -C ~/.local
+  curl -sSL https://github.com/SonarSource/travis-utils/tarball/v58 | tar zx --strip-components 1 -C ~/.local
   source ~/.local/bin/install
+  source ~/.local/bin/setup_promote_environment
 }
 configureTravis
 
-regular_mvn_build_deploy_analyze
+export DEPLOY_PULL_REQUEST=true
+
+. regular_mvn_build_deploy_analyze
+promote
