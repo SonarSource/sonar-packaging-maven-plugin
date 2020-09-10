@@ -144,6 +144,9 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter
   private String jreMinVersion;
 
+  @Parameter
+  private String nodeJsMinVersion;
+
   protected final MavenProject getProject() {
     return project;
   }
@@ -223,6 +226,11 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @CheckForNull
   protected String getJreMinVersion() {
     return jreMinVersion;
+  }
+
+  @CheckForNull
+  protected String getNodeJsMinVersion() {
+    return nodeJsMinVersion;
   }
 
   protected final String getLicensing() {

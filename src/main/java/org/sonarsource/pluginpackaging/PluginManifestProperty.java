@@ -42,7 +42,8 @@ public enum PluginManifestProperty {
   BASE_PLUGIN("Plugin-Base", "Base Plugin"),
   SOURCES_URL("Plugin-SourcesUrl", "Sources URL"),
   DEVELOPERS("Plugin-Developers", "Developers"),
-  JRE_MIN_VERSION("Jre-Min-Version", "Minimal JRE Specification Version");
+  JRE_MIN_VERSION("Jre-Min-Version", "Minimal JRE Specification Version"),
+  NODEJS_MIN_VERSION("NodeJs-Min-Version", "Minimal Node.js Version");
 
   private final String key;
   private final String label;
