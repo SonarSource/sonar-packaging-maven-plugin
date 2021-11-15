@@ -9,8 +9,8 @@ if ( !file.isFile() )
 
 ZipFile zipFile = new ZipFile(file);
 try {
-  if (zipFile.getEntry("META-INF/lib/plexus-utils-1.5.6.jar")==null) {
-    throw new FileNotFoundException("The dependency plexus-utils must be copied in JAR");
+  if (zipFile.getEntry("META-INF/lib/commons-email-1.2.jar")!=null) {
+    throw new IllegalStateException("The dependency commons-email must NOT be copied in JAR");
   }
 } finally {
   zipFile.close();

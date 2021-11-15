@@ -24,10 +24,8 @@ import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
@@ -49,7 +47,6 @@ import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
-import org.codehaus.plexus.util.FileUtils;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -62,7 +59,6 @@ import static java.lang.String.format;
 public class SonarPluginMojo extends AbstractSonarMojo {
 
   private static final String DATETIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ssZ";
-  private static final String LIB_DIR = "META-INF/lib/";
   private static final String[] DEFAULT_EXCLUDES = new String[] {"**/package.html"};
   private static final String[] DEFAULT_INCLUDES = new String[] {"**/**"};
 
@@ -88,7 +84,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
    * See <a href="http://maven.apache.org/shared/maven-archiver/index.html">Maven Archiver Reference</a>.
    */
   @Parameter
-  private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
+  private final MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
   @Component
   private DependencyTreeBuilder dependencyTreeBuilder;
@@ -153,15 +149,9 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       if (isUseChildFirstClassLoader() != null) {
         getLog().warn("Property 'useChildFirstClassLoader' is deprecated");
       }
-      if (isSkipDependenciesPackaging()) {
-        getLog().info("Skip packaging of dependencies");
-
-      } else {
-        List<String> libs = copyDependencies();
-        if (!libs.isEmpty()) {
-          archiver.getArchiver().addDirectory(getAppDirectory(), getIncludes(), getExcludes());
-          addManifestProperty(PluginManifestProperty.DEPENDENCIES, StringUtils.join(libs, " "));
-        }
+      if (!isSkipDependenciesPackaging() && hasDependenciesThatWereCopiedBefore()) {
+        throw new UnsupportedOperationException(
+          "Packaging dependencies as resources is not supported anymore. Please set plugin property 'skipDependenciesPackaging' to 'true' and use the maven-shade-plugin to embed your plugin dependencies.");
       }
       getLog().info(logLine);
       archiver.createArchive(getSession(), getProject(), archive);
@@ -188,20 +178,9 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return null;
   }
 
-  private List<String> copyDependencies() throws IOException, DependencyTreeBuilderException {
-    List<String> libs = new ArrayList<>();
-    File libDirectory = new File(getAppDirectory(), LIB_DIR);
+  private boolean hasDependenciesThatWereCopiedBefore() throws IOException, DependencyTreeBuilderException {
     Set<Artifact> artifacts = getNotProvidedDependencies();
-    for (Artifact artifact : artifacts) {
-      String targetFileName = getDefaultFinalName(artifact);
-      FileUtils.copyFileIfModified(artifact.getFile(), new File(libDirectory, targetFileName));
-      libs.add(LIB_DIR + targetFileName);
-    }
-    return libs;
-  }
-
-  private static String getDefaultFinalName(Artifact artifact) {
-    return artifact.getFile().getName();
+    return !artifacts.isEmpty();
   }
 
   private Set<Artifact> getNotProvidedDependencies() throws DependencyTreeBuilderException {

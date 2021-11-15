@@ -23,7 +23,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Should be included into jar -->
+    <!-- Was previously included into jar -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-email</artifactId>
@@ -40,6 +40,7 @@
         <extensions>true</extensions>
         <configuration>
           <pluginClass>org.sonar.plugins.sample.SamplePlugin</pluginClass>
+          <skipDependenciesPackaging>true</skipDependenciesPackaging>
         </configuration>
       </plugin>
       <plugin>
