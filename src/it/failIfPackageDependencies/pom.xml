@@ -7,9 +7,8 @@
   <artifactId>test</artifactId>
   <version>1.0</version>
   <packaging>sonar-plugin</packaging>
-
-  <name>Do not package sonar-plugin dependencies</name>
-  <description>Do not package sonar-plugin dependencies</description>
+  <name>Package dependencies</name>
+  <description>Package dependencies</description>
 
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -23,11 +22,12 @@
       <version>@sonar.version@</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- Was previously included into jar -->
     <dependency>
-      <groupId>org.sonarsource.java</groupId>
-      <artifactId>sonar-java-plugin</artifactId>
-      <version>3.5</version>
-      <type>sonar-plugin</type>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-email</artifactId>
+      <version>1.2</version>
     </dependency>
   </dependencies>
 
