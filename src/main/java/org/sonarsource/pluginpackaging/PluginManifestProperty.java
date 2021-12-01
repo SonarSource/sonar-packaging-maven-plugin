@@ -31,7 +31,6 @@ public enum PluginManifestProperty {
   VERSION("Plugin-Version", "Version"),
   DISPLAY_VERSION("Plugin-Display-Version", "Display Version"),
   SONAR_VERSION("Sonar-Version", "Minimal SonarQube Version"),
-  @Deprecated
   DEPENDENCIES("Plugin-Dependencies", "Dependencies"),
   HOMEPAGE("Plugin-Homepage", "Homepage URL"),
   TERMS_CONDITIONS_URL("Plugin-TermsConditionsUrl", "Terms and Conditions"),
