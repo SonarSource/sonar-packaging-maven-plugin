@@ -88,7 +88,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
    * See <a href="http://maven.apache.org/shared/maven-archiver/index.html">Maven Archiver Reference</a>.
    */
   @Parameter
-  private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
+  private final MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
   @Component
   private DependencyTreeBuilder dependencyTreeBuilder;
@@ -115,7 +115,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     }
   }
 
-  public File createArchive() throws MojoExecutionException {
+  public File createArchive() {
     File jarFile = getJarFile(getOutputDirectory(), getFinalName(), getClassifier());
     MavenArchiver archiver = new MavenArchiver();
     archiver.setArchiver(jarArchiver);
@@ -136,7 +136,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.MAIN_CLASS, getPluginClass());
       addManifestProperty(PluginManifestProperty.REQUIRE_PLUGINS, getRequiredPlugins());
       addManifestProperty(PluginManifestProperty.SONARLINT_SUPPORTED, isSonarLintSupported());
-      addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader() != null ? isUseChildFirstClassLoader() : false));
+      addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader() != null && isUseChildFirstClassLoader()));
       addManifestProperty(PluginManifestProperty.BASE_PLUGIN, getBasePlugin());
       addManifestProperty(PluginManifestProperty.HOMEPAGE, getPluginUrl());
       addManifestProperty(PluginManifestProperty.SONAR_VERSION, firstNonNull(getSonarQubeMinVersion(), getPluginApiArtifact().getVersion()));
@@ -159,6 +159,11 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       } else {
         List<String> libs = copyDependencies();
         if (!libs.isEmpty()) {
+          if (isSonarLintSupported()) {
+            throw new MojoFailureException(
+              "A SonarLint compatible plugin should not package dependencies. "
+                + "Please set property 'skipDependenciesPackaging' to 'true' and use the maven-shade-plugin to shade instead.");
+          }
           archiver.getArchiver().addDirectory(getAppDirectory(), getIncludes(), getExcludes());
           addManifestProperty(PluginManifestProperty.DEPENDENCIES, StringUtils.join(libs, " "));
         }
