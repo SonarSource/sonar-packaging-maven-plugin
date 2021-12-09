@@ -16,15 +16,13 @@ jobs:
       - name: release
         id: release
         with:
-          distribute: true
           publish_to_binaries: false
-          attach_artifacts_to_github_release: false
-          run_rules_cov: false
           slack_channel: sonarqube-build
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
           BURGRX_USER: ${{ secrets.BURGRX_USER }}
           BURGRX_PASSWORD: ${{ secrets.BURGRX_PASSWORD }}
+          CIRRUS_TOKEN: ${{ secrets.CIRRUS_TOKEN }}
           PATH_PREFIX: ${{ secrets.BINARIES_PATH_PREFIX }}
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           RELEASE_SSH_USER: ${{ secrets.RELEASE_SSH_USER }}
@@ -32,7 +30,6 @@ jobs:
           SLACK_API_TOKEN: ${{secrets.SLACK_API_TOKEN }}
         # Put your action repo here
         uses: SonarSource/gh-action_release/main@v3
-
       - name: Check outputs
         if: always()
         run: |
