@@ -37,7 +37,7 @@ env:
 #
 container_definition: &CONTAINER_DEFINITION
   image: eu.gcr.io/release-engineering-ci-prod/base:j11-m3-latest
-  cluster_name: cirrus-ci-prod
+  cluster_name: cirrus-ci
   zone: europe-west4-b
   namespace: default
 
