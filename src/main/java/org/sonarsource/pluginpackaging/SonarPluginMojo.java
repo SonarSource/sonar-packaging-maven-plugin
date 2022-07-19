@@ -139,7 +139,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader() != null && isUseChildFirstClassLoader()));
       addManifestProperty(PluginManifestProperty.BASE_PLUGIN, getBasePlugin());
       addManifestProperty(PluginManifestProperty.HOMEPAGE, getPluginUrl());
-      addManifestProperty(PluginManifestProperty.SONAR_VERSION, firstNonNull(getSonarQubeMinVersion(), getPluginApiArtifact().getVersion()));
+      addManifestProperty(PluginManifestProperty.SONAR_VERSION, getSonarQubeMinVersion());
       addManifestProperty(PluginManifestProperty.LICENSE, getLicensing());
       addManifestProperty(PluginManifestProperty.ORGANIZATION, getPluginOrganizationName());
       addManifestProperty(PluginManifestProperty.ORGANIZATION_URL, getPluginOrganizationUrl());

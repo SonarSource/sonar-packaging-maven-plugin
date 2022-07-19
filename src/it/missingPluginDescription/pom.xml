@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.codehaus.sonar</groupId>
+  <groupId>org.sonarsource.sonarqube</groupId>
   <artifactId>test</artifactId>
   <version>1.0</version>
   <packaging>sonar-plugin</packaging>
@@ -11,8 +11,7 @@
   <name>Missing plugin description</name>
 
   <properties>
-    <sonar.version>@sonar.version@</sonar.version>
-
+    <sonar.version>8.9.9.56886</sonar.version>
     <!-- sonar.pluginKey = project.artifactId by default -->
     <sonar.pluginKey>test</sonar.pluginKey>
     <!-- sonar.pluginName = project.name by default -->
@@ -25,15 +24,15 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.codehaus.sonar</groupId>
+      <groupId>org.sonarsource.sonarqube</groupId>
       <artifactId>sonar-plugin-api</artifactId>
-      <version>${sonar.version}</version>
+      <version>@sonar.pluginApi.version@</version>
       <scope>provided</scope>
     </dependency>
 
     <!-- unit tests -->
     <dependency>
-      <groupId>org.codehaus.sonar</groupId>
+      <groupId>org.sonarsource.sonarqube</groupId>
       <artifactId>sonar-testing-harness</artifactId>
       <version>${sonar.version}</version>
       <scope>test</scope>

@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.codehaus.sonar</groupId>
+  <groupId>org.sonarsource.sonarqube</groupId>
   <artifactId>sonar-it-extract-plugin-key-plugin</artifactId>
   <version>1.0</version>
   <packaging>sonar-plugin</packaging>
@@ -13,13 +13,14 @@
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
+    <sonar.version>8.9.9.56886</sonar.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.codehaus.sonar</groupId>
+      <groupId>org.sonarsource.sonarqube</groupId>
       <artifactId>sonar-plugin-api</artifactId>
-      <version>@sonar.version@</version>
+      <version>@sonar.pluginApi.version@</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
