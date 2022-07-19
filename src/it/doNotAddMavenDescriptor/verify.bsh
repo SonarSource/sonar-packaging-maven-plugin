@@ -11,10 +11,10 @@ try {
   if (zipFile.getEntry("META-INF/MANIFEST.MF")==null) {
     throw new FileNotFoundException("Could not find manifest");
   }
-  if (zipFile.getEntry("META-INF/maven/org.codehaus.sonar/test/pom.xml")!=null) {
+  if (zipFile.getEntry("META-INF/maven/org.sonarsource.sonar-packaging-maven-plugin/test/pom.xml")!=null) {
     throw new FileNotFoundException("The maven descriptor (pom.xml) has not been removed");
   }
-  if (zipFile.getEntry("META-INF/maven/org.codehaus.sonar/test/pom.properties")!=null) {
+  if (zipFile.getEntry("META-INF/maven/org.sonarsource.sonar-packaging-maven-plugin/test/pom.properties")!=null) {
     throw new FileNotFoundException("The maven descriptor (pom.properties) has not been removed");
   }
 } finally {

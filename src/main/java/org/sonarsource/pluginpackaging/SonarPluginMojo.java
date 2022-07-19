@@ -63,8 +63,8 @@ public class SonarPluginMojo extends AbstractSonarMojo {
 
   private static final String DATETIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ssZ";
   private static final String LIB_DIR = "META-INF/lib/";
-  private static final String[] DEFAULT_EXCLUDES = new String[] {"**/package.html"};
-  private static final String[] DEFAULT_INCLUDES = new String[] {"**/**"};
+  private static final String[] DEFAULT_EXCLUDES = new String[]{"**/package.html"};
+  private static final String[] DEFAULT_INCLUDES = new String[]{"**/**"};
 
   @Component(role = org.codehaus.plexus.archiver.Archiver.class, hint = "jar")
   protected JarArchiver jarArchiver;
@@ -99,12 +99,20 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     checkPluginClass();
+    checkSonarQubeMinVersionIsAbsent();
     File jarFile = createArchive();
     String classifier = getClassifier();
     if (classifier != null) {
       projectHelper.attachArtifact(getProject(), "jar", classifier, jarFile);
     } else {
       getProject().getArtifact().setFile(jarFile);
+    }
+  }
+
+  private void checkSonarQubeMinVersionIsAbsent() throws MojoExecutionException {
+    if (getSonarQubeMinVersion() != null) {
+      throw new MojoExecutionException("'sonarQubeMinVersion' property cannot be specified anymore. " +
+        "Please specify a valid minimum version of plugin api with 'pluginApiMinVersion' instead.");
     }
   }
 
@@ -139,7 +147,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader() != null && isUseChildFirstClassLoader()));
       addManifestProperty(PluginManifestProperty.BASE_PLUGIN, getBasePlugin());
       addManifestProperty(PluginManifestProperty.HOMEPAGE, getPluginUrl());
-      addManifestProperty(PluginManifestProperty.SONAR_VERSION, firstNonNull(getSonarQubeMinVersion(), getPluginApiArtifact().getVersion()));
+      addManifestProperty(PluginManifestProperty.SONAR_VERSION, firstNonNull(getPluginApiMinVersion(), getPluginApiArtifact().getVersion()));
       addManifestProperty(PluginManifestProperty.LICENSE, getLicensing());
       addManifestProperty(PluginManifestProperty.ORGANIZATION, getPluginOrganizationName());
       addManifestProperty(PluginManifestProperty.ORGANIZATION_URL, getPluginOrganizationUrl());

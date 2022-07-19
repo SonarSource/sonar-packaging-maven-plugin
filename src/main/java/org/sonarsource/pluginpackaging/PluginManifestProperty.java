@@ -30,7 +30,7 @@ public enum PluginManifestProperty {
   LICENSE("Plugin-License", "Licensing"),
   VERSION("Plugin-Version", "Version"),
   DISPLAY_VERSION("Plugin-Display-Version", "Display Version"),
-  SONAR_VERSION("Sonar-Version", "Minimal SonarQube Version"),
+  SONAR_VERSION("Sonar-Version", "Minimal Sonar Plugin API Version"),
   DEPENDENCIES("Plugin-Dependencies", "Dependencies"),
   HOMEPAGE("Plugin-Homepage", "Homepage URL"),
   TERMS_CONDITIONS_URL("Plugin-TermsConditionsUrl", "Terms and Conditions"),
