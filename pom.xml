@@ -179,7 +179,7 @@
           </goals>
           <settingsFile>src/it/settings.xml</settingsFile>
           <filterProperties>
-            <sonar.version>4.5.2</sonar.version>
+            <sonar.pluginApi.version>9.5.0.71</sonar.pluginApi.version>
           </filterProperties>
         </configuration>
         <executions>

@@ -1,11 +1,14 @@
 package org.sonar.plugins.sample;
 
-import java.util.Collections;
-import java.util.List;
-import org.sonar.api.SonarPlugin;
+import org.sonar.api.Plugin;
 
-public class SamplePlugin extends SonarPlugin {
-  public List getExtensions() {
-    return Collections.emptyList();
+/**
+ * This class is the entry point for all extensions. It is referenced in pom.xml.
+ */
+public class SamplePlugin implements Plugin {
+
+  @Override
+  public void define(Context context) {
+
   }
 }

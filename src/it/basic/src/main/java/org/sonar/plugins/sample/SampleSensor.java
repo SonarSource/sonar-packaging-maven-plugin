@@ -1,30 +1,28 @@
 package org.sonar.plugins.sample;
 
-import org.apache.commons.lang.math.RandomUtils;
-import org.sonar.api.batch.Sensor;
-import org.sonar.api.batch.SensorContext;
-import org.sonar.api.measures.Measure;
-import org.sonar.api.resources.Project;
+import org.sonar.api.batch.fs.FileSystem;
+import org.sonar.api.batch.fs.InputFile;
+import org.sonar.api.batch.sensor.Sensor;
+import org.sonar.api.batch.sensor.SensorContext;
+import org.sonar.api.batch.sensor.SensorDescriptor;
 
 public class SampleSensor implements Sensor {
-
-  public boolean shouldExecuteOnProject(Project project) {
-    // this sensor is executed on any type of project
-    return true;
+  @Override
+  public void describe(SensorDescriptor descriptor) {
+    descriptor.name("Compute size of file names");
   }
 
-  public void analyse(Project project, SensorContext sensorContext) {
-    saveLabelMeasure(sensorContext);
-    saveNumericMeasure(sensorContext);
-  }
-
-  private void saveNumericMeasure(SensorContext context) {
-    // Sonar API includes many libraries like commons-lang and google-collections
-    context.saveMeasure(SampleMetrics.RANDOM, RandomUtils.nextDouble());
-  }
-
-  private void saveLabelMeasure(SensorContext context) {
-    Measure measure = new Measure(SampleMetrics.MESSAGE, "Hello World!");
-    context.saveMeasure(measure);
+  @Override
+  public void execute(SensorContext context) {
+    FileSystem fs = context.fileSystem();
+    // only "main" files, but not "tests"
+    Iterable<InputFile> files = fs.inputFiles(fs.predicates().hasType(InputFile.Type.MAIN));
+    for (InputFile file : files) {
+      context.<Integer>newMeasure()
+        .forMetric(SampleMetrics.FILENAME_SIZE)
+        .on(file)
+        .withValue(file.filename().length())
+        .save();
+    }
   }
 }

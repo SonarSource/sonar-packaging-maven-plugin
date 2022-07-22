@@ -105,8 +105,16 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter(property = "sonar.pluginName", defaultValue = "${project.name}", required = true)
   private String pluginName;
 
-  @Parameter()
+
+  /**
+   * @deprecated since 1.22, use {@link AbstractSonarMojo#pluginApiMinVersion} instead to specify a minimum plugin api version instead
+   */
+  @Parameter
+  @Deprecated
   private String sonarQubeMinVersion;
+
+  @Parameter
+  private String pluginApiMinVersion;
 
   @Parameter(property = "sonar.requirePlugins")
   protected String requirePlugins;
@@ -198,9 +206,12 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
     return pluginName;
   }
 
-  @CheckForNull
   protected final String getSonarQubeMinVersion() {
     return sonarQubeMinVersion;
+  }
+
+  public String getPluginApiMinVersion() {
+    return pluginApiMinVersion;
   }
 
   @CheckForNull
