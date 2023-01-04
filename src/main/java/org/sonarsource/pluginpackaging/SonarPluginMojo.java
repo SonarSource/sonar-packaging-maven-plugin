@@ -23,9 +23,10 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +41,7 @@ import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -61,10 +63,14 @@ import static java.lang.String.format;
 @Mojo(name = "sonar-plugin", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
 public class SonarPluginMojo extends AbstractSonarMojo {
 
-  private static final String DATETIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ssZ";
   private static final String LIB_DIR = "META-INF/lib/";
   private static final String[] DEFAULT_EXCLUDES = new String[]{"**/package.html"};
   private static final String[] DEFAULT_INCLUDES = new String[]{"**/**"};
+
+  /**
+   * Name of the property needed to have reproducible builds.
+   */
+  private static final String REPRODUCIBLE_BUILDS_PROPERTY = "project.build.outputTimestamp";
 
   @Component(role = org.codehaus.plexus.archiver.Archiver.class, hint = "jar")
   protected JarArchiver jarArchiver;
@@ -153,7 +159,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.ORGANIZATION_URL, getPluginOrganizationUrl());
       addManifestProperty(PluginManifestProperty.TERMS_CONDITIONS_URL, getPluginTermsConditionsUrl());
       addManifestProperty(PluginManifestProperty.ISSUE_TRACKER_URL, getPluginIssueTrackerUrl());
-      addManifestProperty(PluginManifestProperty.BUILD_DATE, new SimpleDateFormat(DATETIME_PATTERN).format(new Date()));
+      addManifestProperty(PluginManifestProperty.BUILD_DATE, DateTimeFormatter.ISO_INSTANT.format(getBuildDate()));
       addManifestProperty(PluginManifestProperty.SOURCES_URL, getPluginSourcesUrl());
       addManifestProperty(PluginManifestProperty.DEVELOPERS, getDevelopers());
       addManifestProperty(PluginManifestProperty.JRE_MIN_VERSION, getJreMinVersion());
@@ -182,6 +188,30 @@ public class SonarPluginMojo extends AbstractSonarMojo {
 
     } catch (Exception e) {
       throw new IllegalStateException("Fail to build SonarQube plugin", e);
+    }
+  }
+
+  /**
+   * Compute build date.
+   *
+   * Take value of {@link #REPRODUCIBLE_BUILDS_PROPERTY} property if set, otherwise take current datetime.
+   *
+   * @return Date of the build.
+   */
+  private Instant getBuildDate() {
+    final String outputTimestamp = getProject().getProperties().getProperty(REPRODUCIBLE_BUILDS_PROPERTY);
+    final Log log = getLog();
+    if (outputTimestamp == null) {
+      if (log.isDebugEnabled()) {
+        log.debug(format("property '%s' is not set. Will take current date for the build date.", REPRODUCIBLE_BUILDS_PROPERTY));
+      }
+      return Instant.now();
+    }
+    try {
+      return Instant.from(DateTimeFormatter.ISO_INSTANT.parse(outputTimestamp));
+    } catch (DateTimeParseException e) {
+      log.warn(format("Unable to parse value of property '%s': %s.  Will take current date for the build date.", REPRODUCIBLE_BUILDS_PROPERTY, outputTimestamp), e);
+      return Instant.now();
     }
   }
 
