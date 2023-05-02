@@ -17,4 +17,4 @@ jobs:
     with:
       publishToBinaries: false
       mavenCentralSync: true
-      slackChannel: sonarqube-build
+      slackChannel: team-sonarqube-build
