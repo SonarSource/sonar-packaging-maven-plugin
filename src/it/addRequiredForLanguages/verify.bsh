@@ -1,0 +1,23 @@
+import java.io.*;
+import java.util.zip.*;
+import java.util.jar.Manifest;
+
+File file = new File( basedir, "target/sonar-it-languages-plugin-1.0.0.42.jar" );
+if ( !file.isFile() )
+{
+    throw new FileNotFoundException( "Could not find generated JAR: " + file );
+}
+
+ZipFile zipFile = new ZipFile(file);
+InputStream input = null;
+try {
+  input = zipFile.getInputStream(zipFile.getEntry("META-INF/MANIFEST.MF"));
+  Manifest manifest = new Manifest(input);
+  String languages = manifest.getMainAttributes().getValue("Plugin-RequiredForLanguages");
+  if (!"java,xml".equals(languages)) {
+    throw new Exception("Missing Plugin-RequiredForLanguages attribute");
+  }
+} finally {
+  zipFile.close();
+  input.close();
+}

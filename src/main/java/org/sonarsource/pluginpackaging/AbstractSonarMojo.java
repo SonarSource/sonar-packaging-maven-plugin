@@ -155,6 +155,9 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter
   private String nodeJsMinVersion;
 
+  @Parameter(property = "sonar.requiredForLanguages")
+  private String requiredForLanguages;
+
   protected final MavenProject getProject() {
     return project;
   }
@@ -242,6 +245,11 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @CheckForNull
   protected String getNodeJsMinVersion() {
     return nodeJsMinVersion;
+  }
+
+  @CheckForNull
+  protected final String getRequiredForLanguages() {
+    return requiredForLanguages;
   }
 
   protected final String getLicensing() {

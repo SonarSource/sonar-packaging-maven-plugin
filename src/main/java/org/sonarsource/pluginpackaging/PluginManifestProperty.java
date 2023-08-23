@@ -43,7 +43,8 @@ public enum PluginManifestProperty {
   SOURCES_URL("Plugin-SourcesUrl", "Sources URL"),
   DEVELOPERS("Plugin-Developers", "Developers"),
   JRE_MIN_VERSION("Jre-Min-Version", "Minimal JRE Specification Version"),
-  NODEJS_MIN_VERSION("NodeJs-Min-Version", "Minimal Node.js Version");
+  NODEJS_MIN_VERSION("NodeJs-Min-Version", "Minimal Node.js Version"),
+  LANGUAGES("Plugin-RequiredForLanguages", "Languages for which this plugin should be downloaded");
 
   private final String key;
   private final String label;
