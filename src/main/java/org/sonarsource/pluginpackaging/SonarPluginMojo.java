@@ -24,6 +24,8 @@ import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -63,6 +65,8 @@ import static java.lang.String.format;
 @Mojo(name = "sonar-plugin", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
 public class SonarPluginMojo extends AbstractSonarMojo {
 
+  private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")
+    .withZone(ZoneId.from(ZoneOffset.UTC));
   private static final String LIB_DIR = "META-INF/lib/";
   private static final String[] DEFAULT_EXCLUDES = new String[]{"**/package.html"};
   private static final String[] DEFAULT_INCLUDES = new String[]{"**/**"};
@@ -159,7 +163,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       addManifestProperty(PluginManifestProperty.ORGANIZATION_URL, getPluginOrganizationUrl());
       addManifestProperty(PluginManifestProperty.TERMS_CONDITIONS_URL, getPluginTermsConditionsUrl());
       addManifestProperty(PluginManifestProperty.ISSUE_TRACKER_URL, getPluginIssueTrackerUrl());
-      addManifestProperty(PluginManifestProperty.BUILD_DATE, DateTimeFormatter.ISO_INSTANT.format(getBuildDate()));
+      addManifestProperty(PluginManifestProperty.BUILD_DATE, DATETIME_PATTERN.format(getBuildDate()));
       addManifestProperty(PluginManifestProperty.SOURCES_URL, getPluginSourcesUrl());
       addManifestProperty(PluginManifestProperty.DEVELOPERS, getDevelopers());
       addManifestProperty(PluginManifestProperty.JRE_MIN_VERSION, getJreMinVersion());
