@@ -18,6 +18,6 @@ jobs:
       contents: write
     uses: SonarSource/gh-action_release/.github/workflows/main.yaml@8c85ff24955eda4c81938fd8c45943ccc8974c68 # 5.0.14
     with:
-      publishToBinaries: true
+      publishToBinaries: false
       mavenCentralSync: true
       slackChannel: team-sonarqube-build
