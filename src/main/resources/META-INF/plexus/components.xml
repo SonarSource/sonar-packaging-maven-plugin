@@ -23,7 +23,7 @@
               <package>org.sonarsource.sonar-packaging-maven-plugin:sonar-packaging-maven-plugin:sonar-plugin</package>
 
               <install>org.apache.maven.plugins:maven-install-plugin:install</install>
-              <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy</deploy>
+              <deploy>org.jfrog.buildinfo:artifactory-maven-plugin:publish</deploy>
             </phases>
           </lifecycle>
         </lifecycles>
