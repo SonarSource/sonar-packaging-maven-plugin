@@ -12,7 +12,7 @@
   <artifactId>sonar-packaging-maven-plugin</artifactId>
   <version>1.23-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
-  <name>SonarQube :: Packaging Maven Plugin</name>
+  <name>SonarQube Server :: Packaging Maven Plugin</name>
 
   <scm>
     <connection>scm:git:git@github.com:SonarSource/sonar-packaging-maven-plugin.git</connection>
