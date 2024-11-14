@@ -1,5 +1,5 @@
 /*
- * SonarQube :: Packaging Maven Plugin
+ * SonarQube Server :: Packaging Maven Plugin
  * Copyright (C) 2009-2024 SonarSource SA
  * mailto:info AT sonarsource DOT com
  *
