@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.sonarsource.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>71.0.0.1292</version>
+    <version>83.0.0.2369</version>
   </parent>
   <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
   <artifactId>sonar-packaging-maven-plugin</artifactId>
@@ -26,6 +26,7 @@
   </issueManagement>
 
   <properties>
+    <license.name>GNU LGPL v3</license.name>
     <!-- used for deployment to SonarSource Artifactory -->
     <gitRepositoryName>sonar-packaging-maven-plugin</gitRepositoryName>
     <mavenVersion>3.8.1</mavenVersion>
