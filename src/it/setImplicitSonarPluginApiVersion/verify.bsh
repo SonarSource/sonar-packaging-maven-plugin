@@ -1,6 +1,6 @@
 import java.io.*;
+import java.util.jar.*;
 import java.util.zip.*;
-import java.util.jar.Manifest;
 
 File file = new File( basedir, "target/test-1.0.jar" );
 if ( !file.isFile() )
@@ -8,17 +8,31 @@ if ( !file.isFile() )
     throw new FileNotFoundException( "Could not find generated JAR: " + file );
 }
 
-ZipFile zipFile = new ZipFile(file);
-InputStream input = null;
+FileInputStream fis = null;
+ZipInputStream zis = null;
 try {
-  input = zipFile.getInputStream(zipFile.getEntry("META-INF/MANIFEST.MF"));
-  Manifest manifest = new Manifest(input);
-  String sonarVersion = manifest.getMainAttributes().getValue("Sonar-Version");
+  fis = new FileInputStream(file);
+  zis = new ZipInputStream(fis);
+  
+  ZipEntry entry;
+  while ((entry = zis.getNextEntry()) != null) {
+    if ("META-INF/MANIFEST.MF".equals(entry.getName())) {
+      Manifest manifest = new Manifest(zis);
+      String sonarVersion = manifest.getMainAttributes().getValue("Sonar-Version");
 
-  if (!sonarVersion.equals("9.5.0.71")) {
-    throw new Exception("SonarQube Server version is not correct: " + sonarVersion);
+      if (!sonarVersion.equals("9.5.0.71")) {
+        throw new Exception("SonarQube Server version is not correct: " + sonarVersion);
+      }
+      return; // Found and validated, exit successfully
+    }
+    zis.closeEntry();
   }
+  throw new Exception("Could not find MANIFEST.MF in JAR file");
 } finally {
-  zipFile.close();
-  input.close();
+  if (zis != null) {
+    zis.close();
+  }
+  if (fis != null) {
+    fis.close();
+  }
 }

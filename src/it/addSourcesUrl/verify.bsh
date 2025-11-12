@@ -1,6 +1,6 @@
 import java.io.*;
+import java.util.jar.*;
 import java.util.zip.*;
-import java.util.jar.Manifest;
 
 File file = new File( basedir, "target/sonar-it-extract-plugin-key-plugin-1.0.jar" );
 if ( !file.isFile() )
@@ -8,16 +8,30 @@ if ( !file.isFile() )
     throw new FileNotFoundException( "Could not find generated JAR: " + file );
 }
 
-ZipFile zipFile = new ZipFile(file);
-InputStream input = null;
+FileInputStream fis = null;
+ZipInputStream zis = null;
 try {
-  input = zipFile.getInputStream(zipFile.getEntry("META-INF/MANIFEST.MF"));
-  Manifest manifest = new Manifest(input);
-  String sourcesUrl = manifest.getMainAttributes().getValue("Plugin-SourcesUrl");
-  if (!"https://github.com/SonarSource/project".equals(sourcesUrl)) {
-    throw new Exception("Plugin-SourcesUrl is not valid: " + dev);
+  fis = new FileInputStream(file);
+  zis = new ZipInputStream(fis);
+  
+  ZipEntry entry;
+  while ((entry = zis.getNextEntry()) != null) {
+    if ("META-INF/MANIFEST.MF".equals(entry.getName())) {
+      Manifest manifest = new Manifest(zis);
+      String sourcesUrl = manifest.getMainAttributes().getValue("Plugin-SourcesUrl");
+      if (!"https://github.com/SonarSource/project".equals(sourcesUrl)) {
+        throw new Exception("Plugin-SourcesUrl is not valid: " + sourcesUrl);
+      }
+      return; // Found and validated, exit successfully
+    }
+    zis.closeEntry();
   }
+  throw new Exception("Could not find MANIFEST.MF in JAR file");
 } finally {
-  zipFile.close();
-  input.close();
+  if (zis != null) {
+    zis.close();
+  }
+  if (fis != null) {
+    fis.close();
+  }
 }
