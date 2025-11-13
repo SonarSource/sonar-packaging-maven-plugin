@@ -38,20 +38,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
-import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.util.FileUtils;
 
@@ -101,10 +101,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   private final MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
   @Component
-  private DependencyTreeBuilder dependencyTreeBuilder;
-
-  @Parameter(defaultValue = "${localRepository}", readonly = true)
-  private ArtifactRepository localRepository;
+  private DependencyGraphBuilder dependencyGraphBuilder;
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
@@ -236,7 +233,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return null;
   }
 
-  private List<String> copyDependencies() throws IOException, DependencyTreeBuilderException {
+  private List<String> copyDependencies() throws IOException, DependencyGraphBuilderException {
     List<String> libs = new ArrayList<>();
     File libDirectory = new File(getAppDirectory(), LIB_DIR);
     Set<Artifact> artifacts = getNotProvidedDependencies();
@@ -252,7 +249,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return artifact.getFile().getName();
   }
 
-  private Set<Artifact> getNotProvidedDependencies() throws DependencyTreeBuilderException {
+  private Set<Artifact> getNotProvidedDependencies() throws DependencyGraphBuilderException {
     Set<Artifact> result = new HashSet<>();
     Set<Artifact> providedArtifacts = getSonarProvidedArtifacts();
     for (Artifact artifact : getIncludedArtifacts()) {
@@ -289,13 +286,12 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return false;
   }
 
-  private Set<Artifact> getSonarProvidedArtifacts() throws DependencyTreeBuilderException {
+  private Set<Artifact> getSonarProvidedArtifacts() throws DependencyGraphBuilderException {
     Set<Artifact> result = new HashSet<>();
     ArtifactFilter artifactFilter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
-    // We need to use Maven 2 dependency tree in order to get omitted dependencies
-    DependencyNode rootNode = dependencyTreeBuilder.buildDependencyTree(getProject(),
-      localRepository,
-      artifactFilter);
+    ProjectBuildingRequest buildingRequest = getSession().getProjectBuildingRequest();
+    buildingRequest.setProject(getProject());
+    DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, artifactFilter);
     searchForSonarProvidedArtifacts(rootNode, result, false);
     return result;
   }
