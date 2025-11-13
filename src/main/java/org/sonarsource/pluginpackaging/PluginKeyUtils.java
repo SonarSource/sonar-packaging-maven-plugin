@@ -19,7 +19,7 @@
  */
 package org.sonarsource.pluginpackaging;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 class PluginKeyUtils {
 
