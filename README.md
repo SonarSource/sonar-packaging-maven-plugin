@@ -1,4 +1,4 @@
-[![Build Status](https://app.travis-ci.com/SonarSource/sonar-packaging-maven-plugin.svg?branch=master)](https://app.travis-ci.com/SonarSource/sonar-packaging-maven-plugin)
+[![Build Status](https://github.com/SonarSource/sonar-packaging-maven-plugin/actions/workflows/build.yml/badge.svg)](https://github.com/SonarSource/sonar-packaging-maven-plugin/actions/workflows/build.yml)
 
 ### License
 
