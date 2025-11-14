@@ -36,14 +36,14 @@ jobs:
           deploy-pull-request: true
       - name: Upload build reports on failure
         if: failure()
-        uses: actions/upload-artifact@ea166c286e01d253c7f31014edaa1d8bae86a0db # v4.6.0
+        uses: actions/upload-artifact@v4
         with:
           name: build-reports
           path: '**/target/surefire-reports/**/*'
           if-no-files-found: ignore
       - name: Upload test results on failure
         if: failure()
-        uses: actions/upload-artifact@ea166c286e01d253c7f31014edaa1d8bae86a0db # v4.6.0
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: '**/target/surefire-reports/**/*.xml'
