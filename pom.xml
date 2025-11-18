@@ -31,6 +31,7 @@
     <gitRepositoryName>sonar-packaging-maven-plugin</gitRepositoryName>
     <mavenVersion>3.8.1</mavenVersion>
     <sonar.exclusions>target/generated-sources/**/*</sonar.exclusions>
+    <sonar.sca.exclusions>src/it/**</sonar.sca.exclusions>
   </properties>
 
   <dependencies>
