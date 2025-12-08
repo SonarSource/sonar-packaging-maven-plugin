@@ -6,11 +6,11 @@
   <parent>
     <groupId>org.sonarsource.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>85.0.0.3035</version>
+    <version>86.0.0.3040</version>
   </parent>
   <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
   <artifactId>sonar-packaging-maven-plugin</artifactId>
-  <version>1.26-SNAPSHOT</version>
+  <version>1.25.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>SonarQube Server :: Packaging Maven Plugin</name>
 
