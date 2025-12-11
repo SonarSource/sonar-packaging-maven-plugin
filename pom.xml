@@ -29,7 +29,7 @@
     <license.name>GNU LGPL v3</license.name>
     <!-- used for deployment to SonarSource Artifactory -->
     <gitRepositoryName>sonar-packaging-maven-plugin</gitRepositoryName>
-    <mavenVersion>3.8.1</mavenVersion>
+    <mavenVersion>3.9.11</mavenVersion>
     <sonar.exclusions>target/generated-sources/**/*</sonar.exclusions>
     <sonar.sca.exclusions>src/it/**</sonar.sca.exclusions>
   </properties>
