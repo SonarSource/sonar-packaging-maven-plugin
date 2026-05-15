@@ -20,7 +20,7 @@ permissions:
 jobs:
   build:
     name: Build
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     timeout-minutes: 30
     steps:
       - &checkout
@@ -53,7 +53,7 @@ jobs:
   promote:
     needs:
       - build
-    runs-on: github-ubuntu-latest-s
+    runs-on: warp-custom-ubuntu-24-04
     name: Promote
     steps:
       - *checkout
