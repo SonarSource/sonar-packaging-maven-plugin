@@ -16,4 +16,4 @@ jobs:
     with:
       publishToBinaries: false
       mavenCentralSync: true
-      slackChannel: team-sonarqube-build
+      slackChannel: ops-ci-experience
