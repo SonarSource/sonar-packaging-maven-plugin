@@ -24,27 +24,27 @@ jobs:
     timeout-minutes: 30
     steps:
       - &checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
-          version: 2025.7.12
-      - uses: SonarSource/ci-github-actions/build-maven@53ccf0ed05eb001e8b652deee1218b9baa9833f2 # v1 (1.2.1)
+          version: 2026.8.14
+      - uses: SonarSource/ci-github-actions/build-maven@d41706a4180f70b6c0d0479795309a6c99726022 # v2 (1.2.1)
         with:
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
           deploy-pull-request: true
       - name: Upload build reports on failure
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: build-reports
           path: '**/target/surefire-reports/**/*'
           if-no-files-found: ignore
       - name: Upload test results on failure
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: test-results
           path: '**/target/surefire-reports/**/*.xml'
@@ -57,11 +57,11 @@ jobs:
     name: Promote
     steps:
       - *checkout
-      - uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
           cache_save: false
-          version: 2025.7.12
-      - uses: SonarSource/ci-github-actions/get-build-number@53ccf0ed05eb001e8b652deee1218b9baa9833f2 # v1 (1.2.1)
-      - uses: SonarSource/ci-github-actions/promote@53ccf0ed05eb001e8b652deee1218b9baa9833f2 # v1 (1.2.1)
+          version: 2026.8.14
+      - uses: SonarSource/ci-github-actions/get-build-number@d41706a4180f70b6c0d0479795309a6c99726022 # v2 (1.2.1)
+      - uses: SonarSource/ci-github-actions/promote@d41706a4180f70b6c0d0479795309a6c99726022 # v2 (1.2.1)
         with:
           promote-pull-request: true
