@@ -4,6 +4,7 @@
     "local>SonarSource/renovate-config"
   ],
   "ignoreDeps": [
-    "net.sourceforge.saxon:saxon"
+    "net.sourceforge.saxon:saxon",
+    "org.sonarsource.sonar-packaging-maven-plugin:sonar-testing-harness"
   ]
 }
