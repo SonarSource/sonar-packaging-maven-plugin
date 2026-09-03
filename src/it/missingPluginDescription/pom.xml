@@ -32,7 +32,7 @@
 
     <!-- unit tests -->
     <dependency>
-      <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+      <groupId>org.sonarsource.sonarqube</groupId>
       <artifactId>sonar-testing-harness</artifactId>
       <version>${sonar.version}</version>
       <scope>test</scope>

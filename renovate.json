@@ -2,5 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>SonarSource/renovate-config"
+  ],
+  "ignoreDeps": [
+    "net.sourceforge.saxon:saxon"
   ]
 }
