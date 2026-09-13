@@ -17,7 +17,7 @@
   </organization>
 
   <properties>
-    <sonar.version>9.5.0.56709</sonar.version>
+    <sonar.version>9.9.9.104369</sonar.version>
     <!-- sonar.pluginKey = project.artifactId by default -->
     <sonar.pluginKey>test</sonar.pluginKey>
     <!-- sonar.pluginName = project.name by default -->
@@ -56,7 +56,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.1</version>
+        <version>2.5.1</version>
       </plugin>
     </plugins>
   </build>
