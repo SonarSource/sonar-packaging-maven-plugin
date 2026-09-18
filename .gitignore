@@ -14,6 +14,10 @@ dependency-reduced-pom.xml
 .project
 .settings
 
+# ---- VS
+
+.vs/
+
 # ---- Mac OS X
 .DS_Store
 Icon?
@@ -25,6 +29,6 @@ Icon?
 
 # ---- Windows
 # Windows image file caches
-Thumbs.db 
+Thumbs.db
 # Folder config file
 Desktop.ini
