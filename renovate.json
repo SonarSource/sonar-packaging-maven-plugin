@@ -6,5 +6,8 @@
   "ignoreDeps": [
     "net.sourceforge.saxon:saxon",
     "org.sonarsource.sonar-packaging-maven-plugin:sonar-testing-harness"
+  ],
+  "ignorePaths": [
+    "src/it/**"
   ]
 }
