@@ -316,8 +316,8 @@ public class SonarPluginMojo extends AbstractSonarMojo {
       }
 
       if (!Artifact.SCOPE_TEST.equals(dependency.getArtifact().getScope())) {
-        for (Object childDep : dependency.getChildren()) {
-          searchForSonarProvidedArtifacts((DependencyNode) childDep, sonarArtifacts, provided);
+        for (DependencyNode childDep : dependency.getChildren()) {
+          searchForSonarProvidedArtifacts(childDep, sonarArtifacts, provided);
         }
       }
     }
