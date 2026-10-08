@@ -13,7 +13,7 @@
 
 # Sonar packaging Maven plugin
 
-This Maven plugin packages SonarQube Server plugins. It is build tooling for plugin authors and Sonar repositories, rather than an end-user code-analysis scanner.
+This Maven plugin packages Sonar plugins, including SonarQube for IDE-compatible plugins. It is build tooling for plugin authors and Sonar repositories, rather than an end-user code-analysis scanner.
 
 To learn more about the SonarQube product family, visit the [Sonar website](https://www.sonarsource.com/products/sonarqube/).
 
