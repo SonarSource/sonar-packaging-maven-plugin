@@ -23,12 +23,14 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +55,7 @@ import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
+import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.codehaus.plexus.util.FileUtils;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
@@ -70,6 +73,9 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   private static final String LIB_DIR = "META-INF/lib/";
   private static final String[] DEFAULT_EXCLUDES = new String[]{"**/package.html"};
   private static final String[] DEFAULT_INCLUDES = new String[]{"**/**"};
+  private static final String STANDARD_RESOURCES_DIR = "src/main/resources";
+  private static final String ZIP_PLUGIN_ENTRY_PREFIX = "plugin/";
+  private static final String ZIP_RESOURCES_ENTRY_PREFIX = "resources/";
 
   /**
    * Name of the property needed to have reproducible builds.
@@ -78,6 +84,9 @@ public class SonarPluginMojo extends AbstractSonarMojo {
 
   @Component(role = org.codehaus.plexus.archiver.Archiver.class, hint = "jar")
   protected JarArchiver jarArchiver;
+
+  @Component(role = org.codehaus.plexus.archiver.Archiver.class, hint = "zip")
+  protected ZipArchiver zipArchiver;
 
   /**
    * List of files to include. Specified as fileset patterns which are relative to the input directory whose contents
@@ -92,6 +101,30 @@ public class SonarPluginMojo extends AbstractSonarMojo {
    */
   @Parameter
   private String[] excludes;
+
+  /**
+   * Whether to additionally produce a ZIP-packaged plugin artifact, with layout:
+   * <pre>
+   * my-plugin-1.0.zip
+   * ├── resources/   (content of {@link #resourcesDirectory}, any layout)
+   * └── plugin/
+   *     └── my-plugin-1.0.jar   (the JAR built by this same goal, byte-for-byte, manifest unchanged)
+   * </pre>
+   * The JAR packaging is always produced and remains the primary/default artifact; the ZIP, when enabled, is
+   * attached as an additional artifact of type {@code zip}.
+   */
+  @Parameter(property = "sonar.zipPackaging", defaultValue = "false")
+  private boolean zipPackaging;
+
+  /**
+   * Directory whose content is copied verbatim under {@code resources/} in the ZIP artifact. Only consulted when
+   * {@link #zipPackaging} is {@code true}. Defaults to this plugin ecosystem's existing "static resources"
+   * convention ({@code src/main/resources/static}) so migrating authors don't need to move files; when
+   * {@link #zipPackaging} is {@code true}, this directory's content is also excluded from the JAR to avoid
+   * duplicating it in both places. If it does not exist, the produced ZIP simply has no {@code resources/} entries.
+   */
+  @Parameter(property = "sonar.resourcesDirectory", defaultValue = "${project.basedir}/src/main/resources/static")
+  private File resourcesDirectory;
 
   /**
    * The archive configuration to use.
@@ -117,6 +150,10 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     } else {
       getProject().getArtifact().setFile(jarFile);
     }
+    if (zipPackaging) {
+      File zipFile = createZipArchive(jarFile);
+      projectHelper.attachArtifact(getProject(), "zip", classifier, zipFile);
+    }
   }
 
   private void checkSonarQubeMinVersionIsAbsent() throws MojoExecutionException {
@@ -140,7 +177,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     archiver.setOutputFile(jarFile);
 
     try {
-      archiver.getArchiver().addDirectory(getClassesDirectory(), getIncludes(), getExcludes());
+      archiver.getArchiver().addDirectory(getClassesDirectory(), getIncludes(), getJarExcludes());
       archive.setAddMavenDescriptor(isAddMavenDescriptor());
 
       String logLine = "-------------------------------------------------------";
@@ -193,6 +230,23 @@ public class SonarPluginMojo extends AbstractSonarMojo {
 
     } catch (Exception e) {
       throw new IllegalStateException("Fail to build SonarQube plugin", e);
+    }
+  }
+
+  private File createZipArchive(File jarFile) {
+    File zipFile = getZipFile(getOutputDirectory(), getFinalName(), getClassifier());
+    zipArchiver.setDestFile(zipFile);
+    try {
+      zipArchiver.addFile(jarFile, ZIP_PLUGIN_ENTRY_PREFIX + jarFile.getName());
+      if (resourcesDirectory.isDirectory()) {
+        zipArchiver.addDirectory(resourcesDirectory, ZIP_RESOURCES_ENTRY_PREFIX, getIncludes(), getExcludes());
+      } else {
+        getLog().debug(format("No resources directory found at '%s'; zip will have no 'resources/' entries", resourcesDirectory));
+      }
+      zipArchiver.createArchive();
+      return zipFile;
+    } catch (Exception e) {
+      throw new IllegalStateException("Fail to build SonarQube plugin zip", e);
     }
   }
 
@@ -337,16 +391,47 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return DEFAULT_EXCLUDES;
   }
 
-  protected static File getJarFile(File basedir, String finalName, String classifier) {
-    String suffix;
-    if (StringUtils.isBlank(classifier)) {
-      suffix = "";
-    } else if (classifier.charAt(0) == '-') {
-      suffix = classifier;
-    } else {
-      suffix = "-" + classifier;
+  private String[] getJarExcludes() {
+    String[] base = getExcludes();
+    if (!zipPackaging) {
+      return base;
     }
-    return new File(basedir, finalName + suffix + ".jar");
+    String exclude = getResourcesDirectoryExcludePattern();
+    if (exclude == null) {
+      return base;
+    }
+    getLog().warn(format("Resources directory '%s' is excluded from the plugin JAR; its content will only be "
+      + "available in the 'resources/' folder of the ZIP artifact.", resourcesDirectory));
+    String[] combined = Arrays.copyOf(base, base.length + 1);
+    combined[base.length] = exclude;
+    return combined;
+  }
+
+  @CheckForNull
+  private String getResourcesDirectoryExcludePattern() {
+    Path standardResourcesPath = new File(getProject().getBasedir(), STANDARD_RESOURCES_DIR).toPath().normalize();
+    Path resourcesPath = resourcesDirectory.toPath().normalize();
+    if (!resourcesPath.startsWith(standardResourcesPath) || resourcesPath.equals(standardResourcesPath)) {
+      return null;
+    }
+    return standardResourcesPath.relativize(resourcesPath).toString().replace(File.separatorChar, '/') + "/**";
+  }
+
+  protected static File getJarFile(File basedir, String finalName, String classifier) {
+    return new File(basedir, finalName + getClassifierSuffix(classifier) + ".jar");
+  }
+
+  protected static File getZipFile(File basedir, String finalName, String classifier) {
+    return new File(basedir, finalName + getClassifierSuffix(classifier) + ".zip");
+  }
+
+  private static String getClassifierSuffix(String classifier) {
+    if (StringUtils.isBlank(classifier)) {
+      return "";
+    } else if (classifier.charAt(0) == '-') {
+      return classifier;
+    }
+    return "-" + classifier;
   }
 
 }
