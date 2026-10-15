@@ -1,0 +1,103 @@
+import java.io.*;
+import java.security.MessageDigest;
+import java.util.jar.*;
+import java.util.zip.*;
+
+File jarFile = new File(basedir, "target/test-1.0.jar");
+if (!jarFile.isFile()) {
+  throw new FileNotFoundException("Could not find generated JAR: " + jarFile);
+}
+
+File zipFile = new File(basedir, "target/test-1.0.zip");
+if (!zipFile.isFile()) {
+  throw new FileNotFoundException("Could not find generated ZIP: " + zipFile);
+}
+
+// The on-disk jar must be the shaded one: maven-shade-plugin's ManifestResourceTransformer stamps this entry.
+JarFile finalJar = new JarFile(jarFile);
+String shadedBy;
+try {
+  shadedBy = finalJar.getManifest().getMainAttributes().getValue("Shaded-By");
+} finally {
+  finalJar.close();
+}
+if (!"maven-shade-plugin".equals(shadedBy)) {
+  throw new IllegalStateException("Expected target/test-1.0.jar to be the shaded jar (Shaded-By manifest entry), got: " + shadedBy);
+}
+
+// Extract the jar embedded in the zip.
+File extractedJar = new File(basedir, "target/extracted-plugin.jar");
+ZipFile zip = new ZipFile(zipFile);
+try {
+  ZipEntry entry = zip.getEntry("plugin/test-1.0.jar");
+  if (entry == null) {
+    throw new FileNotFoundException("Zip does not contain plugin/test-1.0.jar");
+  }
+  InputStream in = zip.getInputStream(entry);
+  try {
+    FileOutputStream out = new FileOutputStream(extractedJar);
+    try {
+      byte[] buffer = new byte[8192];
+      int len;
+      while ((len = in.read(buffer)) != -1) {
+        out.write(buffer, 0, len);
+      }
+    } finally {
+      out.close();
+    }
+  } finally {
+    in.close();
+  }
+} finally {
+  zip.close();
+}
+
+// The jar embedded in the zip must be byte-for-byte the final on-disk (shaded) jar, not an earlier, pre-shade one.
+MessageDigest jarDigest = MessageDigest.getInstance("SHA-256");
+FileInputStream jarIn = new FileInputStream(jarFile);
+try {
+  byte[] buffer = new byte[8192];
+  int len;
+  while ((len = jarIn.read(buffer)) != -1) {
+    jarDigest.update(buffer, 0, len);
+  }
+} finally {
+  jarIn.close();
+}
+
+MessageDigest extractedDigest = MessageDigest.getInstance("SHA-256");
+FileInputStream extractedIn = new FileInputStream(extractedJar);
+try {
+  byte[] buffer = new byte[8192];
+  int len;
+  while ((len = extractedIn.read(buffer)) != -1) {
+    extractedDigest.update(buffer, 0, len);
+  }
+} finally {
+  extractedIn.close();
+}
+
+if (!MessageDigest.isEqual(jarDigest.digest(), extractedDigest.digest())) {
+  throw new IllegalStateException("The JAR embedded in the ZIP (plugin/test-1.0.jar) is not byte-identical to the "
+    + "final on-disk shaded JAR (target/test-1.0.jar). This means the 'zip' goal ran before maven-shade-plugin "
+    + "rewrote the JAR in place.");
+}
+
+// resourcesDirectory's content is not excluded from the JAR: it is intentionally duplicated in both artifacts.
+JarFile finalJarForStaticCheck = new JarFile(jarFile);
+try {
+  if (finalJarForStaticCheck.getEntry("static/sample.txt") == null) {
+    throw new IllegalStateException("static/sample.txt should still be present in target/test-1.0.jar");
+  }
+} finally {
+  finalJarForStaticCheck.close();
+}
+
+ZipFile zipForStaticCheck = new ZipFile(zipFile);
+try {
+  if (zipForStaticCheck.getEntry("resources/sample.txt") == null) {
+    throw new IllegalStateException("Zip does not contain resources/sample.txt");
+  }
+} finally {
+  zipForStaticCheck.close();
+}
