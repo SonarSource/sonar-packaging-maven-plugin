@@ -338,16 +338,4 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return DEFAULT_EXCLUDES;
   }
 
-  protected static File getJarFile(File basedir, String finalName, String classifier) {
-    String suffix;
-    if (StringUtils.isBlank(classifier)) {
-      suffix = "";
-    } else if (classifier.charAt(0) == '-') {
-      suffix = classifier;
-    } else {
-      suffix = "-" + classifier;
-    }
-    return new File(basedir, finalName + suffix + ".jar");
-  }
-
 }

@@ -334,4 +334,21 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
     }
     return null;
   }
+
+  protected static File getJarFile(File basedir, String finalName, String classifier) {
+    return new File(basedir, finalName + getClassifierSuffix(classifier) + ".jar");
+  }
+
+  protected static File getZipFile(File basedir, String finalName, String classifier) {
+    return new File(basedir, finalName + getClassifierSuffix(classifier) + ".zip");
+  }
+
+  protected static String getClassifierSuffix(String classifier) {
+    if (StringUtils.isBlank(classifier)) {
+      return "";
+    } else if (classifier.charAt(0) == '-') {
+      return classifier;
+    }
+    return "-" + classifier;
+  }
 }
