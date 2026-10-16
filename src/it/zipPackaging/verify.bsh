@@ -1,0 +1,69 @@
+import java.io.*;
+import java.util.jar.*;
+import java.util.zip.*;
+
+File jarFile = new File(basedir, "target/test-1.0.jar");
+if (!jarFile.isFile()) {
+  throw new FileNotFoundException("Could not find generated JAR: " + jarFile);
+}
+
+File zipFile = new File(basedir, "target/test-1.0.zip");
+if (!zipFile.isFile()) {
+  throw new FileNotFoundException("Could not find generated ZIP: " + zipFile);
+}
+
+ZipFile zip = new ZipFile(zipFile);
+try {
+  if (zip.getEntry("plugin/test-1.0.jar") == null) {
+    throw new FileNotFoundException("Zip does not contain plugin/test-1.0.jar");
+  }
+  if (zip.getEntry("resources/models/sample.txt") == null) {
+    throw new FileNotFoundException("Zip does not contain resources/models/sample.txt");
+  }
+
+  InputStream jarEntryStream = zip.getInputStream(zip.getEntry("plugin/test-1.0.jar"));
+  try {
+    JarInputStream innerJar = new JarInputStream(jarEntryStream);
+    try {
+      Manifest manifest = innerJar.getManifest();
+      if (manifest == null) {
+        throw new FileNotFoundException("Nested jar has no manifest");
+      }
+      String pluginKey = manifest.getMainAttributes().getValue("Plugin-Key");
+      if (!"test".equals(pluginKey)) {
+        throw new IllegalStateException("Expected Plugin-Key=test in nested jar manifest, got: " + pluginKey);
+      }
+      String pluginVersion = manifest.getMainAttributes().getValue("Plugin-Version");
+      if (!"1.0".equals(pluginVersion)) {
+        throw new IllegalStateException("Expected Plugin-Version=1.0 in nested jar manifest, got: " + pluginVersion);
+      }
+
+      boolean staticEntryFoundInJar = false;
+      JarEntry entry;
+      while ((entry = innerJar.getNextJarEntry()) != null) {
+        if ("static/models/sample.txt".equals(entry.getName())) {
+          staticEntryFoundInJar = true;
+        }
+      }
+      if (staticEntryFoundInJar) {
+        throw new IllegalStateException("static/models/sample.txt should have been excluded from the plugin JAR when zipPackaging is enabled");
+      }
+    } finally {
+      innerJar.close();
+    }
+  } finally {
+    jarEntryStream.close();
+  }
+} finally {
+  zip.close();
+}
+
+// Also verify the top-level jar (same file as plugin/test-1.0.jar inside the zip) does not contain the static resources.
+ZipFile jar = new ZipFile(jarFile);
+try {
+  if (jar.getEntry("static/models/sample.txt") != null) {
+    throw new IllegalStateException("static/models/sample.txt should have been excluded from target/test-1.0.jar when zipPackaging is enabled");
+  }
+} finally {
+  jar.close();
+}
