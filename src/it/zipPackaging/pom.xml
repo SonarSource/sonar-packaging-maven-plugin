@@ -36,6 +36,10 @@
         <extensions>true</extensions>
         <configuration>
           <zipPackaging>true</zipPackaging>
+          <!-- Scoped to the JAR's classesDirectory sweep only; must not affect the ZIP's resources/ content. -->
+          <includes>
+            <include>org/**</include>
+          </includes>
         </configuration>
       </plugin>
       <plugin>

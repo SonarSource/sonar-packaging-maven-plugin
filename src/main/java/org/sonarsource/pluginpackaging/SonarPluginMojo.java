@@ -117,11 +117,14 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   private boolean zipPackaging;
 
   /**
-   * Directory whose content is copied verbatim under {@code resources/} in the ZIP artifact. Only consulted when
-   * {@link #zipPackaging} is {@code true}. Defaults to this plugin ecosystem's existing "static resources"
-   * convention ({@code src/main/resources/static}) so migrating authors don't need to move files; when
-   * {@link #zipPackaging} is {@code true}, this directory's content is also excluded from the JAR to avoid
-   * duplicating it in both places. If it does not exist, the produced ZIP simply has no {@code resources/} entries.
+   * Directory whose content is copied verbatim under {@code resources/} in the ZIP artifact (always using the
+   * default include/exclude patterns, not {@link #includes}/{@link #excludes} which only apply to the JAR). Only
+   * consulted when {@link #zipPackaging} is {@code true}. Defaults to this plugin ecosystem's existing
+   * "static resources" convention ({@code src/main/resources/static}) so migrating authors don't need to move
+   * files; when it is nested under {@code src/main/resources} (and is not that directory itself), its content is
+   * also excluded from the JAR to avoid duplicating it in both places. If it does not exist, the produced ZIP
+   * simply has no {@code resources/} entries. If it is set to {@code src/main/resources} itself, the exclusion is
+   * skipped (to avoid excluding everything from the JAR) and the content intentionally ends up in both artifacts.
    */
   @Parameter(property = "sonar.resourcesDirectory", defaultValue = "${project.basedir}/src/main/resources/static")
   private File resourcesDirectory;
@@ -239,7 +242,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     try {
       zipArchiver.addFile(jarFile, ZIP_PLUGIN_ENTRY_PREFIX + jarFile.getName());
       if (resourcesDirectory.isDirectory()) {
-        zipArchiver.addDirectory(resourcesDirectory, ZIP_RESOURCES_ENTRY_PREFIX, getIncludes(), getExcludes());
+        zipArchiver.addDirectory(resourcesDirectory, ZIP_RESOURCES_ENTRY_PREFIX, DEFAULT_INCLUDES, DEFAULT_EXCLUDES);
       } else {
         getLog().debug(format("No resources directory found at '%s'; zip will have no 'resources/' entries", resourcesDirectory));
       }
@@ -393,10 +396,17 @@ public class SonarPluginMojo extends AbstractSonarMojo {
 
   private String[] getJarExcludes() {
     String[] base = getExcludes();
-    if (!zipPackaging) {
+    if (!zipPackaging || !resourcesDirectory.isDirectory()) {
       return base;
     }
-    String exclude = getResourcesDirectoryExcludePattern();
+    Path standardResourcesPath = new File(getProject().getBasedir(), STANDARD_RESOURCES_DIR).toPath().normalize();
+    Path resourcesPath = resourcesDirectory.toPath().normalize();
+    if (resourcesPath.equals(standardResourcesPath)) {
+      getLog().warn(format("Resources directory '%s' is the standard resources directory itself; its content will NOT be "
+        + "excluded from the plugin JAR and will also be duplicated in the ZIP artifact's 'resources/' folder.", resourcesDirectory));
+      return base;
+    }
+    String exclude = getResourcesDirectoryExcludePattern(standardResourcesPath, resourcesPath);
     if (exclude == null) {
       return base;
     }
@@ -408,10 +418,8 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   }
 
   @CheckForNull
-  private String getResourcesDirectoryExcludePattern() {
-    Path standardResourcesPath = new File(getProject().getBasedir(), STANDARD_RESOURCES_DIR).toPath().normalize();
-    Path resourcesPath = resourcesDirectory.toPath().normalize();
-    if (!resourcesPath.startsWith(standardResourcesPath) || resourcesPath.equals(standardResourcesPath)) {
+  private static String getResourcesDirectoryExcludePattern(Path standardResourcesPath, Path resourcesPath) {
+    if (!resourcesPath.startsWith(standardResourcesPath)) {
       return null;
     }
     return standardResourcesPath.relativize(resourcesPath).toString().replace(File.separatorChar, '/') + "/**";
