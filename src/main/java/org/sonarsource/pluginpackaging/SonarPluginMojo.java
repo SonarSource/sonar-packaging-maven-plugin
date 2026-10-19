@@ -38,9 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
-import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -49,11 +46,15 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
-import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.util.graph.transformer.ConflictResolver;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -101,10 +102,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   private final MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
   @Component
-  private DependencyTreeBuilder dependencyTreeBuilder;
-
-  @Parameter(defaultValue = "${localRepository}", readonly = true)
-  private ArtifactRepository localRepository;
+  private DependencyGraphBuilder dependencyGraphBuilder;
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
@@ -236,7 +234,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return null;
   }
 
-  private List<String> copyDependencies() throws IOException, DependencyTreeBuilderException {
+  private List<String> copyDependencies() throws IOException, DependencyGraphBuilderException {
     List<String> libs = new ArrayList<>();
     File libDirectory = new File(getAppDirectory(), LIB_DIR);
     Set<Artifact> artifacts = getNotProvidedDependencies();
@@ -252,7 +250,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return artifact.getFile().getName();
   }
 
-  private Set<Artifact> getNotProvidedDependencies() throws DependencyTreeBuilderException {
+  private Set<Artifact> getNotProvidedDependencies() throws DependencyGraphBuilderException {
     Set<Artifact> result = new HashSet<>();
     Set<Artifact> providedArtifacts = getSonarProvidedArtifacts();
     for (Artifact artifact : getIncludedArtifacts()) {
@@ -289,13 +287,16 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     return false;
   }
 
-  private Set<Artifact> getSonarProvidedArtifacts() throws DependencyTreeBuilderException {
+  private Set<Artifact> getSonarProvidedArtifacts() throws DependencyGraphBuilderException {
     Set<Artifact> result = new HashSet<>();
-    ArtifactFilter artifactFilter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
-    // We need to use Maven 2 dependency tree in order to get omitted dependencies
-    DependencyNode rootNode = dependencyTreeBuilder.buildDependencyTree(getProject(),
-      localRepository,
-      artifactFilter);
+    ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(getSession().getProjectBuildingRequest());
+    buildingRequest.setProject(getProject());
+    DefaultRepositorySystemSession repositorySession = new DefaultRepositorySystemSession(buildingRequest.getRepositorySession());
+    // Retain conflict losers so dependencies provided by SonarQube are found even when another version wins.
+    repositorySession.setConfigProperty(ConflictResolver.CONFIG_PROP_VERBOSE, true);
+    buildingRequest.setRepositorySession(repositorySession);
+    // Include provided dependencies and their children when looking for artifacts supplied by SonarQube.
+    DependencyNode rootNode = dependencyGraphBuilder.buildDependencyGraph(buildingRequest, null);
     searchForSonarProvidedArtifacts(rootNode, result, false);
     return result;
   }

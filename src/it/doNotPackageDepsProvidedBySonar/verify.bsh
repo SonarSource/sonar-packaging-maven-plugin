@@ -8,8 +8,12 @@ if (!file.isFile()) {
 
 ZipFile zipFile = new ZipFile(file);
 try {
-  if (zipFile.getEntry("META-INF/lib/commons-lang-2.5.jar")!=null) {
-    throw new FileNotFoundException("The dependency commons-lang must not be copied in the plugin");
+  Enumeration entries = zipFile.entries();
+  while (entries.hasMoreElements()) {
+    ZipEntry entry = (ZipEntry) entries.nextElement();
+    if (entry.getName().startsWith("META-INF/lib/commons-lang-")) {
+      throw new IllegalStateException("The dependency commons-lang must not be copied in the plugin: " + entry.getName());
+    }
   }
 } finally {
   zipFile.close();
