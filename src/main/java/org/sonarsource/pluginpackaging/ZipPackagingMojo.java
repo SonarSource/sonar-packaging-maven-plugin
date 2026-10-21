@@ -123,6 +123,10 @@ public class ZipPackagingMojo extends AbstractSonarMojo {
     }
   }
 
+  private static File getZipFile(File basedir, String finalName, String classifier) {
+    return new File(basedir, finalName + getClassifierSuffix(classifier) + ".zip");
+  }
+
   private File createZipArchive(File jarFile) {
     File zipFile = getZipFile(getOutputDirectory(), getFinalName(), getClassifier());
     zipArchiver.setDestFile(zipFile);

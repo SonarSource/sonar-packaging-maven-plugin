@@ -20,17 +20,12 @@
 package org.sonarsource.pluginpackaging;
 
 import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.License;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -49,28 +44,10 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   private MavenProject project;
 
   /**
-   *  Maven Session
-   */
-  @Parameter(defaultValue = "${session}", readonly = true)
-  private MavenSession session;
-
-  /**
    * Directory containing the generated JAR.
    */
   @Parameter(property = "project.build.directory", required = true)
   private File outputDirectory;
-
-  /**
-   * Directory containing the classes and resource files that should be packaged into the JAR.
-   */
-  @Parameter(property = "project.build.outputDirectory", required = true)
-  private File classesDirectory;
-
-  /**
-  * The directory where the app is built.
-  */
-  @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}", required = true)
-  private File appDirectory;
 
   /**
    * Name of the generated JAR.
@@ -90,95 +67,15 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
   @Parameter(property = "sonar.pluginKey", defaultValue = "${project.artifactId}", required = true)
   protected String pluginKey;
 
-  @Parameter(property = "sonar.pluginTermsConditionsUrl")
-  private URL pluginTermsConditionsUrl;
-
-  @Parameter(property = "sonar.pluginDisplayVersion")
-  private String pluginDisplayVersion;
-
-  @Parameter(property = "sonar.pluginClass", required = true)
-  private String pluginClass;
-
-  @Parameter(property = "sonar.sonarLintSupported", defaultValue = "false")
-  private boolean sonarLintSupported;
-
   @Parameter(property = "sonar.pluginName", defaultValue = "${project.name}", required = true)
   private String pluginName;
-
-
-  /**
-   * @deprecated since 1.22, use {@link AbstractSonarMojo#pluginApiMinVersion} instead to specify a minimum plugin api version instead
-   */
-  @Parameter
-  @Deprecated
-  private String sonarQubeMinVersion;
-
-  @Parameter
-  private String pluginApiMinVersion;
-
-  @Parameter(property = "sonar.requirePlugins")
-  protected String requirePlugins;
-
-  @Parameter(property = "sonar.pluginDescription", defaultValue = "${project.description}", required = true)
-  private String pluginDescription;
-
-  @Parameter(property = "sonar.pluginSourcesUrl", defaultValue = "${project.scm.url}")
-  private URL pluginSourcesUrl;
-
-  @Parameter(property = "sonar.pluginOrganizationName", defaultValue = "${project.organization.name}")
-  private String pluginOrganizationName;
-
-  @Parameter(property = "sonar.pluginOrganizationUrl", defaultValue = "${project.organization.url}")
-  private URL pluginOrganizationUrl;
-
-  @Parameter(property = "sonar.pluginUrl", defaultValue = "${project.url}")
-  private URL pluginUrl;
-
-  @Parameter(defaultValue = "${project.issueManagement.url}")
-  private URL pluginIssueTrackerUrl;
-
-  @Parameter(property = "sonar.useChildFirstClassLoader")
-  private Boolean useChildFirstClassLoader;
-
-  @Parameter(property = "sonar.basePlugin")
-  private String basePlugin;
-
-  @Parameter(property = "sonar.skipDependenciesPackaging", defaultValue = "false")
-  private boolean skipDependenciesPackaging;
-
-  @Parameter(property = "sonar.addMavenDescriptor", defaultValue = "true")
-  private boolean addMavenDescriptor;
-
-  @Parameter
-  private String jreMinVersion;
-
-  @Parameter
-  private String nodeJsMinVersion;
-
-  @Parameter(property = "sonar.requiredForLanguages")
-  private String requiredForLanguages;
 
   protected final MavenProject getProject() {
     return project;
   }
 
-  protected final MavenSession getSession() {
-    return session;
-  }
-
   protected final File getOutputDirectory() {
     return outputDirectory;
-  }
-
-  /**
-   * @return the main classes directory, so it's used as the root of the jar.
-   */
-  protected final File getClassesDirectory() {
-    return classesDirectory;
-  }
-
-  public File getAppDirectory() {
-    return appDirectory;
   }
 
   protected final String getFinalName() {
@@ -193,114 +90,8 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
     return PluginKeyUtils.sanitize(pluginKey);
   }
 
-  protected final String getPluginDisplayVersion() {
-    return pluginDisplayVersion == null ? getProject().getVersion() : pluginDisplayVersion;
-  }
-
-  protected final String getPluginClass() {
-    return pluginClass;
-  }
-
-  protected final boolean isSonarLintSupported() {
-    return sonarLintSupported;
-  }
-
   protected final String getPluginName() {
     return pluginName;
-  }
-
-  protected final String getSonarQubeMinVersion() {
-    return sonarQubeMinVersion;
-  }
-
-  public String getPluginApiMinVersion() {
-    return pluginApiMinVersion;
-  }
-
-  @CheckForNull
-  protected final String getPluginOrganizationName() {
-    return pluginOrganizationName;
-  }
-
-  @CheckForNull
-  protected final URL getPluginOrganizationUrl() {
-    return pluginOrganizationUrl;
-  }
-
-  @CheckForNull
-  protected final URL getPluginSourcesUrl() {
-    return pluginSourcesUrl;
-  }
-
-  @CheckForNull
-  protected final String getRequiredPlugins() {
-    return requirePlugins;
-  }
-
-  @CheckForNull
-  protected String getJreMinVersion() {
-    return jreMinVersion;
-  }
-
-  @CheckForNull
-  protected String getNodeJsMinVersion() {
-    return nodeJsMinVersion;
-  }
-
-  @CheckForNull
-  protected final String getRequiredForLanguages() {
-    return requiredForLanguages;
-  }
-
-  protected final String getLicensing() {
-    List<String> licenses = new ArrayList<>();
-    if (getProject().getLicenses() != null) {
-      for (Object license : getProject().getLicenses()) {
-        License l = (License) license;
-        if (l.getName() != null) {
-          licenses.add(l.getName());
-        }
-      }
-    }
-    return StringUtils.join(licenses, " ");
-  }
-
-  @CheckForNull
-  protected final String getPluginDescription() {
-    return pluginDescription;
-  }
-
-  @CheckForNull
-  protected final URL getPluginUrl() {
-    return pluginUrl;
-  }
-
-  @CheckForNull
-  protected final URL getPluginTermsConditionsUrl() {
-    return pluginTermsConditionsUrl;
-  }
-
-  @CheckForNull
-  protected final URL getPluginIssueTrackerUrl() {
-    return pluginIssueTrackerUrl;
-  }
-
-  @CheckForNull
-  protected final Boolean isUseChildFirstClassLoader() {
-    return useChildFirstClassLoader;
-  }
-
-  @CheckForNull
-  protected final String getBasePlugin() {
-    return basePlugin;
-  }
-
-  protected final boolean isSkipDependenciesPackaging() {
-    return skipDependenciesPackaging;
-  }
-
-  protected final boolean isAddMavenDescriptor() {
-    return addMavenDescriptor;
   }
 
   @SuppressWarnings({"unchecked"})
@@ -337,10 +128,6 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
 
   protected static File getJarFile(File basedir, String finalName, String classifier) {
     return new File(basedir, finalName + getClassifierSuffix(classifier) + ".jar");
-  }
-
-  protected static File getZipFile(File basedir, String finalName, String classifier) {
-    return new File(basedir, finalName + getClassifierSuffix(classifier) + ".zip");
   }
 
   protected static String getClassifierSuffix(String classifier) {

@@ -23,6 +23,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -38,6 +39,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.License;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -77,6 +80,24 @@ public class SonarPluginMojo extends AbstractSonarMojo {
    */
   private static final String REPRODUCIBLE_BUILDS_PROPERTY = "project.build.outputTimestamp";
 
+  /**
+   *  Maven Session
+   */
+  @Parameter(defaultValue = "${session}", readonly = true)
+  private MavenSession session;
+
+  /**
+   * Directory containing the classes and resource files that should be packaged into the JAR.
+   */
+  @Parameter(property = "project.build.outputDirectory", required = true)
+  private File classesDirectory;
+
+  /**
+  * The directory where the app is built.
+  */
+  @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}", required = true)
+  private File appDirectory;
+
   @Component(role = org.codehaus.plexus.archiver.Archiver.class, hint = "jar")
   protected JarArchiver jarArchiver;
 
@@ -104,6 +125,70 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   @Component
   private DependencyGraphBuilder dependencyGraphBuilder;
 
+  @Parameter(property = "sonar.pluginTermsConditionsUrl")
+  private URL pluginTermsConditionsUrl;
+
+  @Parameter(property = "sonar.pluginDisplayVersion")
+  private String pluginDisplayVersion;
+
+  @Parameter(property = "sonar.pluginClass", required = true)
+  private String pluginClass;
+
+  @Parameter(property = "sonar.sonarLintSupported", defaultValue = "false")
+  private boolean sonarLintSupported;
+
+  /**
+   * @deprecated since 1.22, use {@link SonarPluginMojo#pluginApiMinVersion} instead to specify a minimum plugin api version instead
+   */
+  @Parameter
+  @Deprecated
+  private String sonarQubeMinVersion;
+
+  @Parameter
+  private String pluginApiMinVersion;
+
+  @Parameter(property = "sonar.requirePlugins")
+  private String requirePlugins;
+
+  @Parameter(property = "sonar.pluginDescription", defaultValue = "${project.description}", required = true)
+  private String pluginDescription;
+
+  @Parameter(property = "sonar.pluginSourcesUrl", defaultValue = "${project.scm.url}")
+  private URL pluginSourcesUrl;
+
+  @Parameter(property = "sonar.pluginOrganizationName", defaultValue = "${project.organization.name}")
+  private String pluginOrganizationName;
+
+  @Parameter(property = "sonar.pluginOrganizationUrl", defaultValue = "${project.organization.url}")
+  private URL pluginOrganizationUrl;
+
+  @Parameter(property = "sonar.pluginUrl", defaultValue = "${project.url}")
+  private URL pluginUrl;
+
+  @Parameter(defaultValue = "${project.issueManagement.url}")
+  private URL pluginIssueTrackerUrl;
+
+  @Parameter(property = "sonar.useChildFirstClassLoader")
+  private Boolean useChildFirstClassLoader;
+
+  @Parameter(property = "sonar.basePlugin")
+  private String basePlugin;
+
+  @Parameter(property = "sonar.skipDependenciesPackaging", defaultValue = "false")
+  private boolean skipDependenciesPackaging;
+
+  @Parameter(property = "sonar.addMavenDescriptor", defaultValue = "true")
+  private boolean addMavenDescriptor;
+
+  @Parameter
+  private String jreMinVersion;
+
+  @Parameter
+  private String nodeJsMinVersion;
+
+  @Parameter(property = "sonar.requiredForLanguages")
+  private String requiredForLanguages;
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     checkPluginClass();
@@ -118,15 +203,15 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   }
 
   private void checkSonarQubeMinVersionIsAbsent() throws MojoExecutionException {
-    if (getSonarQubeMinVersion() != null) {
+    if (sonarQubeMinVersion != null) {
       throw new MojoExecutionException("'sonarQubeMinVersion' property cannot be specified anymore. " +
         "Please specify a valid minimum version of plugin api with 'pluginApiMinVersion' instead.");
     }
   }
 
   private void checkPluginClass() throws MojoExecutionException {
-    String classname = getPluginClass();
-    if (!new File(getClassesDirectory(), classname.replace('.', '/') + ".class").exists()) {
+    String classname = pluginClass;
+    if (!new File(classesDirectory, classname.replace('.', '/') + ".class").exists()) {
       throw new MojoExecutionException("Plugin class not found: '" + classname);
     }
   }
@@ -138,55 +223,55 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     archiver.setOutputFile(jarFile);
 
     try {
-      archiver.getArchiver().addDirectory(getClassesDirectory(), getIncludes(), getExcludes());
-      archive.setAddMavenDescriptor(isAddMavenDescriptor());
+      archiver.getArchiver().addDirectory(classesDirectory, getIncludes(), getExcludes());
+      archive.setAddMavenDescriptor(addMavenDescriptor);
 
       String logLine = "-------------------------------------------------------";
       getLog().info(logLine);
       getLog().info("Plugin definition in update center");
       addManifestProperty(PluginManifestProperty.KEY, getPluginKey());
       addManifestProperty(PluginManifestProperty.NAME, getPluginName());
-      addManifestProperty(PluginManifestProperty.DESCRIPTION, getPluginDescription());
+      addManifestProperty(PluginManifestProperty.DESCRIPTION, pluginDescription);
       addManifestProperty(PluginManifestProperty.VERSION, getProject().getVersion());
       addManifestProperty(PluginManifestProperty.DISPLAY_VERSION, getPluginDisplayVersion());
-      addManifestProperty(PluginManifestProperty.MAIN_CLASS, getPluginClass());
-      addManifestProperty(PluginManifestProperty.REQUIRE_PLUGINS, getRequiredPlugins());
-      addManifestProperty(PluginManifestProperty.SONARLINT_SUPPORTED, isSonarLintSupported());
-      addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(isUseChildFirstClassLoader() != null && isUseChildFirstClassLoader()));
-      addManifestProperty(PluginManifestProperty.BASE_PLUGIN, getBasePlugin());
-      addManifestProperty(PluginManifestProperty.HOMEPAGE, getPluginUrl());
-      addManifestProperty(PluginManifestProperty.SONAR_VERSION, getPluginApiMinVersion());
+      addManifestProperty(PluginManifestProperty.MAIN_CLASS, pluginClass);
+      addManifestProperty(PluginManifestProperty.REQUIRE_PLUGINS, requirePlugins);
+      addManifestProperty(PluginManifestProperty.SONARLINT_SUPPORTED, sonarLintSupported);
+      addManifestProperty(PluginManifestProperty.USE_CHILD_FIRST_CLASSLOADER, String.valueOf(useChildFirstClassLoader != null && useChildFirstClassLoader));
+      addManifestProperty(PluginManifestProperty.BASE_PLUGIN, basePlugin);
+      addManifestProperty(PluginManifestProperty.HOMEPAGE, pluginUrl);
+      addManifestProperty(PluginManifestProperty.SONAR_VERSION, pluginApiMinVersion);
       addManifestProperty(PluginManifestProperty.LICENSE, getLicensing());
-      addManifestProperty(PluginManifestProperty.ORGANIZATION, getPluginOrganizationName());
-      addManifestProperty(PluginManifestProperty.ORGANIZATION_URL, getPluginOrganizationUrl());
-      addManifestProperty(PluginManifestProperty.TERMS_CONDITIONS_URL, getPluginTermsConditionsUrl());
-      addManifestProperty(PluginManifestProperty.ISSUE_TRACKER_URL, getPluginIssueTrackerUrl());
+      addManifestProperty(PluginManifestProperty.ORGANIZATION, pluginOrganizationName);
+      addManifestProperty(PluginManifestProperty.ORGANIZATION_URL, pluginOrganizationUrl);
+      addManifestProperty(PluginManifestProperty.TERMS_CONDITIONS_URL, pluginTermsConditionsUrl);
+      addManifestProperty(PluginManifestProperty.ISSUE_TRACKER_URL, pluginIssueTrackerUrl);
       addManifestProperty(PluginManifestProperty.BUILD_DATE, DATETIME_PATTERN.format(getBuildDate()));
-      addManifestProperty(PluginManifestProperty.SOURCES_URL, getPluginSourcesUrl());
+      addManifestProperty(PluginManifestProperty.SOURCES_URL, pluginSourcesUrl);
       addManifestProperty(PluginManifestProperty.DEVELOPERS, getDevelopers());
-      addManifestProperty(PluginManifestProperty.JRE_MIN_VERSION, getJreMinVersion());
-      addManifestProperty(PluginManifestProperty.NODEJS_MIN_VERSION, getNodeJsMinVersion());
-      addManifestProperty(PluginManifestProperty.LANGUAGES, getRequiredForLanguages());
-      if (isUseChildFirstClassLoader() != null) {
+      addManifestProperty(PluginManifestProperty.JRE_MIN_VERSION, jreMinVersion);
+      addManifestProperty(PluginManifestProperty.NODEJS_MIN_VERSION, nodeJsMinVersion);
+      addManifestProperty(PluginManifestProperty.LANGUAGES, requiredForLanguages);
+      if (useChildFirstClassLoader != null) {
         getLog().warn("Property 'useChildFirstClassLoader' is deprecated");
       }
-      if (isSkipDependenciesPackaging()) {
+      if (skipDependenciesPackaging) {
         getLog().info("Skip packaging of dependencies");
 
       } else {
         List<String> libs = copyDependencies();
         if (!libs.isEmpty()) {
-          if (isSonarLintSupported()) {
+          if (sonarLintSupported) {
             throw new MojoFailureException(
               "A SonarLint compatible plugin should not package dependencies. "
                 + "Please set property 'skipDependenciesPackaging' to 'true' and use the maven-shade-plugin to shade instead.");
           }
-          archiver.getArchiver().addDirectory(getAppDirectory(), getIncludes(), getExcludes());
+          archiver.getArchiver().addDirectory(appDirectory, getIncludes(), getExcludes());
           addManifestProperty(PluginManifestProperty.DEPENDENCIES, StringUtils.join(libs, " "));
         }
       }
       getLog().info(logLine);
-      archiver.createArchive(getSession(), getProject(), archive);
+      archiver.createArchive(session, getProject(), archive);
       return jarFile;
 
     } catch (Exception e) {
@@ -225,6 +310,22 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     }
   }
 
+  private String getPluginDisplayVersion() {
+    return pluginDisplayVersion == null ? getProject().getVersion() : pluginDisplayVersion;
+  }
+
+  private String getLicensing() {
+    List<String> licenses = new ArrayList<>();
+    if (getProject().getLicenses() != null) {
+      for (License license : getProject().getLicenses()) {
+        if (license.getName() != null) {
+          licenses.add(license.getName());
+        }
+      }
+    }
+    return StringUtils.join(licenses, " ");
+  }
+
   @CheckForNull
   private String getDevelopers() {
     if (getProject().getDevelopers() != null) {
@@ -236,7 +337,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
 
   private List<String> copyDependencies() throws IOException, DependencyGraphBuilderException {
     List<String> libs = new ArrayList<>();
-    File libDirectory = new File(getAppDirectory(), LIB_DIR);
+    File libDirectory = new File(appDirectory, LIB_DIR);
     Set<Artifact> artifacts = getNotProvidedDependencies();
     for (Artifact artifact : artifacts) {
       String targetFileName = getDefaultFinalName(artifact);
@@ -289,7 +390,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
 
   private Set<Artifact> getSonarProvidedArtifacts() throws DependencyGraphBuilderException {
     Set<Artifact> result = new HashSet<>();
-    ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(getSession().getProjectBuildingRequest());
+    ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(session.getProjectBuildingRequest());
     buildingRequest.setProject(getProject());
     DefaultRepositorySystemSession repositorySession = new DefaultRepositorySystemSession(buildingRequest.getRepositorySession());
     // Retain conflict losers so dependencies provided by SonarQube are found even when another version wins.
