@@ -6,78 +6,24 @@
   <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
   <artifactId>test</artifactId>
   <version>1.0</version>
-  <packaging>sonar-plugin</packaging>
+  <packaging>pom</packaging>
 
   <name>Zip Packaging With Shade</name>
   <description>Zip Packaging With Shade</description>
 
+  <!--
+    "plugin" builds the plugin JAR and shades it with maven-shade-plugin. "zip" depends on "plugin" and wraps
+    its JAR into a ZIP. Maven's reactor always finishes building "plugin", shading included, before "zip"
+    starts, since "zip" declares a dependency on it: no ordering configuration needed anywhere, unlike the
+    single-module designs this one replaces.
+  -->
+  <modules>
+    <module>plugin</module>
+    <module>zip</module>
+  </modules>
+
   <properties>
-    <sonar.pluginKey>test</sonar.pluginKey>
-    <sonar.pluginClass>org.sonar.plugins.sample.SamplePlugin</sonar.pluginClass>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.source>1.8</maven.compiler.source>
+    <sonar-packaging-maven-plugin.version>@project.version@</sonar-packaging-maven-plugin.version>
+    <sonar.pluginApi.version>@sonar.pluginApi.version@</sonar.pluginApi.version>
   </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.sonarsource.api.plugin</groupId>
-      <artifactId>sonar-plugin-api</artifactId>
-      <version>@sonar.pluginApi.version@</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <!--
-        Declared BEFORE the sonar-packaging-maven-plugin's "zip" execution below: maven-shade-plugin rewrites
-        target/test-1.0.jar in place during the "package" phase. The "zip" goal's execution must run after it, and
-        execution order within a single phase follows declaration order in this pom.xml.
-      -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.6.2</version>
-        <executions>
-          <execution>
-            <id>shade</id>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <shadedArtifactAttached>false</shadedArtifactAttached>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <manifestEntries>
-                    <Shaded-By>maven-shade-plugin</Shaded-By>
-                  </manifestEntries>
-                </transformer>
-              </transformers>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>@project.groupId@</groupId>
-        <artifactId>@project.artifactId@</artifactId>
-        <version>@project.version@</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <id>build-zip</id>
-            <goals>
-              <goal>zip</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.1</version>
-      </plugin>
-    </plugins>
-  </build>
 </project>

@@ -40,5 +40,48 @@
         <addedToClasspath>true</addedToClasspath>
       </configuration>
     </component>
+    <component>
+      <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
+      <role-hint>sonar-plugin-zip</role-hint>
+      <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
+      <configuration>
+        <lifecycles>
+          <lifecycle>
+            <id>default</id>
+            <phases>
+              <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
+              <compile>org.apache.maven.plugins:maven-compiler-plugin:compile</compile>
+              <process-test-resources>org.apache.maven.plugins:maven-resources-plugin:testResources
+              </process-test-resources>
+              <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile</test-compile>
+              <test>org.apache.maven.plugins:maven-surefire-plugin:test</test>
+
+              <!--
+                SonarQube specific step: wrap this module's single "sonar-plugin"-typed dependency's JAR (plus
+                resourcesDirectory) into a ZIP, which is this module's primary artifact. No other goal is ever
+                bound to any phase of this packaging, so there's nothing to order against: this module's whole
+                job is building the ZIP, after the dependency module (and anything that rewrites its JAR, e.g.
+                maven-shade-plugin) has already finished building, per Maven's normal reactor order.
+              -->
+              <package>org.sonarsource.sonar-packaging-maven-plugin:sonar-packaging-maven-plugin:zip</package>
+
+              <install>org.apache.maven.plugins:maven-install-plugin:install</install>
+              <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy</deploy>
+            </phases>
+          </lifecycle>
+        </lifecycles>
+      </configuration>
+    </component>
+    <component>
+      <role>org.apache.maven.artifact.handler.ArtifactHandler</role>
+      <role-hint>sonar-plugin-zip</role-hint>
+      <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
+      <configuration>
+        <type>sonar-plugin-zip</type>
+        <extension>zip</extension>
+        <language>none</language>
+        <addedToClasspath>false</addedToClasspath>
+      </configuration>
+    </component>
   </components>
 </component-set>

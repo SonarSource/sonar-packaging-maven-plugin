@@ -21,12 +21,16 @@ package org.sonarsource.pluginpackaging;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.ZipFile;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.codehaus.plexus.util.DirectoryScanner;
 
@@ -40,22 +44,21 @@ import static java.lang.String.format;
  * └── plugin/
  *     └── my-plugin-1.0.jar   (the JAR found at this point in the build, manifest unchanged)
  * </pre>
- * This goal is <b>not</b> wired into this plugin's custom lifecycle mapping and never runs implicitly: it only
- * builds the ZIP when explicitly bound via an {@code <execution>} in the consuming project's own {@code pom.xml},
- * typically to the {@code package} phase. Binding this goal is itself the opt-in: there is no separate flag to
- * enable or disable it. {@link #resourcesDirectory} is best configured inside that {@code <execution>}'s own
- * {@code <configuration>} rather than the plugin's top-level one, since the latter also applies to the
- * {@code check} and {@code sonar-plugin} goals, which don't have this parameter.
+ * This goal runs in its own, dedicated module &mdash; separate from the one that builds the plugin JAR &mdash;
+ * whose only job is building this ZIP. That module must declare exactly one dependency of type
+ * {@code sonar-plugin} (pointing at the plugin module) and nothing else of that type; this goal wraps that
+ * dependency's resolved JAR file, whatever it ends up being after the plugin module's own build &mdash;
+ * including any {@code package}-phase plugin that rewrites the JAR in place there, e.g.
+ * {@code maven-shade-plugin} &mdash; is completely finished. Maven's reactor guarantees that happens before
+ * this module even starts, so there is no phase- or execution-ordering concern to manage here at all.
  * <p>
- * <b>Ordering requirement:</b> this goal wraps whatever file is found at the plugin JAR's expected path at the
- * time it runs. The plugin JAR itself is produced by the {@code sonar-plugin} goal (see {@link SonarPluginMojo}),
- * which always runs first within the {@code package} phase. If another {@code package}-phase plugin execution
- * rewrites that same JAR in place afterwards &mdash; most commonly {@code maven-shade-plugin}, to shade/minimize
- * dependencies into it &mdash; this goal's own {@code <execution>} must be declared <i>after</i> that plugin's
- * execution in the consuming {@code pom.xml}, so that it runs last within the {@code package} phase and therefore
- * picks up the final JAR rather than an intermediate one.
+ * With {@code <packaging>sonar-plugin-zip</packaging>} on that dedicated module, this goal runs implicitly in
+ * the {@code package} phase, with no {@code <execution>} needed: the built ZIP becomes the module's primary
+ * artifact (unless a {@code classifier} is set, in which case it's attached instead, same as
+ * {@link SonarPluginMojo}'s JAR). {@link #resourcesDirectory} can simply be set in this plugin's top-level
+ * {@code <configuration>}.
  */
-@Mojo(name = "zip", defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
+@Mojo(name = "zip", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public class ZipPackagingMojo extends AbstractSonarMojo {
 
   private static final String[] DEFAULT_EXCLUDES = {"**/package.html"};
@@ -80,16 +83,41 @@ public class ZipPackagingMojo extends AbstractSonarMojo {
 
   @Override
   public void execute() throws MojoExecutionException {
-    File jarFile = getJarFile(getOutputDirectory(), getFinalName(), getClassifier());
-    if (!jarFile.isFile()) {
-      throw new MojoExecutionException(format("Cannot build zip artifact: plugin JAR not found at '%s'. "
-        + "Make sure the 'zip' goal's execution is declared after the 'sonar-plugin' goal (and after any other "
-        + "package-phase plugin execution, e.g. maven-shade-plugin, that produces the final JAR) in this pom.xml.",
-        jarFile));
+    File jarFile = getSonarPluginDependency().getFile();
+    if (jarFile == null || !jarFile.isFile()) {
+      throw new MojoExecutionException(format("Cannot build zip artifact: the '%s'-typed dependency has no "
+        + "resolved JAR file ('%s'). Make sure that module was built before this one, e.g. by running the "
+        + "reactor build from the root.", SONAR_PLUGIN_TYPE, jarFile));
     }
     warnIfResourcesDirectoryDuplicatedInJar(jarFile);
     File zipFile = createZipArchive(jarFile);
-    projectHelper.attachArtifact(getProject(), "zip", getClassifier(), zipFile);
+    String classifier = getClassifier();
+    if (classifier != null) {
+      projectHelper.attachArtifact(getProject(), "zip", classifier, zipFile);
+    } else {
+      getProject().getArtifact().setFile(zipFile);
+    }
+  }
+
+  /**
+   * Finds this module's single dependency of type {@code sonar-plugin} &mdash; the plugin module whose JAR
+   * this goal wraps into the ZIP. Fails if there isn't exactly one, since there would otherwise be no
+   * unambiguous way to pick which one to wrap.
+   */
+  private Artifact getSonarPluginDependency() throws MojoExecutionException {
+    Set<Artifact> sonarPluginDependencies = new HashSet<>();
+    for (Artifact dependency : getDependencyArtifacts()) {
+      if (SONAR_PLUGIN_TYPE.equals(dependency.getType())) {
+        sonarPluginDependencies.add(dependency);
+      }
+    }
+    if (sonarPluginDependencies.size() != 1) {
+      throw new MojoExecutionException(format("This module must declare exactly one dependency of type '%s' "
+        + "(the plugin module whose JAR this goal wraps into the ZIP): found %d. Declare a <dependency> on "
+        + "your plugin module with <type>%s</type>, and nothing else of that type.",
+        SONAR_PLUGIN_TYPE, sonarPluginDependencies.size(), SONAR_PLUGIN_TYPE));
+    }
+    return sonarPluginDependencies.iterator().next();
   }
 
   /**

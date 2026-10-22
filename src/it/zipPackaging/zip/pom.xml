@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+    <artifactId>test</artifactId>
+    <version>1.0</version>
+  </parent>
+
+  <artifactId>test-zip</artifactId>
+  <packaging>sonar-plugin-zip</packaging>
+
+  <name>Zip Packaging - zip</name>
+  <description>Zip Packaging - zip</description>
+
+  <!-- The "zip" goal requires exactly one dependency of this type: the module whose JAR it wraps into the ZIP. -->
+  <dependencies>
+    <dependency>
+      <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+      <artifactId>test-plugin</artifactId>
+      <version>${project.version}</version>
+      <type>sonar-plugin</type>
+    </dependency>
+  </dependencies>
+
+  <!-- No <executions> needed: the "zip" goal runs implicitly in the "package" phase of this packaging. -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+        <artifactId>sonar-packaging-maven-plugin</artifactId>
+        <version>${sonar-packaging-maven-plugin.version}</version>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -36,6 +36,7 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
 
   public static final String SONAR_PLUGIN_API_ARTIFACTID = "sonar-plugin-api";
   public static final String SONAR_PLUGIN_API_TYPE = "jar";
+  public static final String SONAR_PLUGIN_TYPE = "sonar-plugin";
 
   /**
    * The Maven project.
@@ -124,10 +125,6 @@ public abstract class AbstractSonarMojo extends AbstractMojo {
       }
     }
     return null;
-  }
-
-  protected static File getJarFile(File basedir, String finalName, String classifier) {
-    return new File(basedir, finalName + getClassifierSuffix(classifier) + ".jar");
   }
 
   protected static String getClassifierSuffix(String classifier) {
