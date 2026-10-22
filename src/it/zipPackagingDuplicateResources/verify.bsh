@@ -45,7 +45,7 @@ for (String line : Files.readAllLines(log.toPath())) {
   if (line.startsWith("[WARNING]")
     && line.contains("is also packaged inside the plugin JAR")
     && line.contains("included twice")
-    && line.contains("moved out of the JAR")) {
+    && line.contains("Remove those resources from the plugin module")) {
     found = true;
   }
 }

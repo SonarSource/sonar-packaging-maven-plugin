@@ -72,11 +72,14 @@ public class ZipPackagingMojo extends AbstractSonarMojo {
   /**
    * Directory whose content is copied verbatim under {@code resources/} in the ZIP artifact, using the default
    * include/exclude patterns. Defaults to this plugin ecosystem's existing "static resources" convention
-   * ({@code src/main/resources/static}) so migrating authors don't need to move files. This content is not
-   * automatically excluded from the plugin JAR. If it turns out to also be packaged in the JAR (which happens by
-   * default, since the JAR packaging includes it unless explicitly excluded), a build warning is logged
-   * recommending it be moved out of the JAR to avoid shipping the same resources in both artifacts. If the
-   * directory does not exist, the produced ZIP simply has no {@code resources/} entries.
+   * ({@code src/main/resources/static}), resolved against <i>this</i> module's own {@code basedir} &mdash; not
+   * the plugin module's. Moving existing static resources into the ZIP means moving those files into this
+   * module (or pointing this parameter back at the plugin module's own directory, if the plugin module should
+   * keep serving them too). This content is not automatically excluded from the plugin module's JAR: nothing
+   * links the two by default, since they're separate modules. If it turns out to also be present in the JAR
+   * (e.g. because this parameter was pointed at the plugin module's own resources), a build warning is logged
+   * recommending it be excluded from the JAR, in the plugin module, to avoid shipping the same resources in
+   * both artifacts. If the directory does not exist, the produced ZIP simply has no {@code resources/} entries.
    */
   @Parameter(property = "sonar.resourcesDirectory", defaultValue = "${project.basedir}/src/main/resources/static")
   private File resourcesDirectory;
@@ -139,10 +142,11 @@ public class ZipPackagingMojo extends AbstractSonarMojo {
       for (String resourceFile : scanner.getIncludedFiles()) {
         String jarEntryName = resourcesDirectory.getName() + "/" + resourceFile.replace(File.separatorChar, '/');
         if (jar.getEntry(jarEntryName) != null) {
-          getLog().warn(format("Resources directory '%s' is also packaged inside the plugin JAR: its content is "
-            + "included twice, in both the JAR and the ZIP's 'resources/' folder. Those resources should be moved "
-            + "out of the JAR packaging (e.g. via this plugin's 'excludes' parameter) to avoid the duplication.",
-            resourcesDirectory));
+          getLog().warn(format("Resources directory '%s' is also packaged inside the plugin JAR ('%s'): its "
+            + "content is included twice, in both the JAR and the ZIP's 'resources/' folder. Remove those "
+            + "resources from the plugin module (or exclude them there via the 'sonar-plugin' goal's "
+            + "'excludes' parameter) to avoid the duplication.",
+            resourcesDirectory, jarFile));
           return;
         }
       }
