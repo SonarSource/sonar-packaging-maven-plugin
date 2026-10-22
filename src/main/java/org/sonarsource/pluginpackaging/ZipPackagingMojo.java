@@ -21,8 +21,8 @@ package org.sonarsource.pluginpackaging;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -108,12 +108,9 @@ public class ZipPackagingMojo extends AbstractSonarMojo {
    * unambiguous way to pick which one to wrap.
    */
   private Artifact getSonarPluginDependency() throws MojoExecutionException {
-    Set<Artifact> sonarPluginDependencies = new HashSet<>();
-    for (Artifact dependency : getDependencyArtifacts()) {
-      if (SONAR_PLUGIN_TYPE.equals(dependency.getType())) {
-        sonarPluginDependencies.add(dependency);
-      }
-    }
+    Set<Artifact> sonarPluginDependencies = getDependencyArtifacts().stream()
+      .filter(dependency -> SONAR_PLUGIN_TYPE.equals(dependency.getType()))
+      .collect(Collectors.toSet());
     if (sonarPluginDependencies.size() != 1) {
       throw new MojoExecutionException(format("This module must declare exactly one dependency of type '%s' "
         + "(the plugin module whose JAR this goal wraps into the ZIP): found %d. Declare a <dependency> on "
