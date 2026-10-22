@@ -17,8 +17,8 @@ try {
   if (zip.getEntry("plugin/test-plugin-1.0.jar") == null) {
     throw new FileNotFoundException("Zip does not contain plugin/test-plugin-1.0.jar");
   }
-  if (zip.getEntry("resources/models/sample.txt") == null) {
-    throw new FileNotFoundException("Zip does not contain resources/models/sample.txt");
+  if (zip.getEntry("resources/static/models/sample.txt") == null) {
+    throw new FileNotFoundException("Zip does not contain resources/static/models/sample.txt");
   }
 
   InputStream jarEntryStream = zip.getInputStream(zip.getEntry("plugin/test-plugin-1.0.jar"));

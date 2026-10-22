@@ -27,8 +27,8 @@ try {
 
 ZipFile zip = new ZipFile(zipFile);
 try {
-  if (zip.getEntry("resources/models/sample.txt") == null) {
-    throw new FileNotFoundException("Zip does not contain resources/models/sample.txt");
+  if (zip.getEntry("resources/static/models/sample.txt") == null) {
+    throw new FileNotFoundException("Zip does not contain resources/static/models/sample.txt");
   }
 } finally {
   zip.close();

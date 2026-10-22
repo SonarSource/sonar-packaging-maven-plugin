@@ -86,8 +86,8 @@ if (!MessageDigest.isEqual(jarDigest.digest(), extractedDigest.digest())) {
 // resourcesDirectory content still makes it into the zip normally even though the plugin module uses shade.
 ZipFile zipForStaticCheck = new ZipFile(zipFile);
 try {
-  if (zipForStaticCheck.getEntry("resources/sample.txt") == null) {
-    throw new IllegalStateException("Zip does not contain resources/sample.txt");
+  if (zipForStaticCheck.getEntry("resources/static/sample.txt") == null) {
+    throw new IllegalStateException("Zip does not contain resources/static/sample.txt");
   }
 } finally {
   zipForStaticCheck.close();

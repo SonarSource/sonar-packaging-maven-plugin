@@ -49,12 +49,13 @@
           <lifecycle>
             <id>default</id>
             <phases>
+              <!--
+                This packaging has no Java (or test) sources: only "process-resources" is bound, so that the
+                "zip" goal below can read resourcesDirectory from this module's processed resources output
+                (target/classes, filtered, extra resource roots included) rather than its raw source tree.
+                There is no "compile", "test", etc.: nothing would ever use them.
+              -->
               <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
-              <compile>org.apache.maven.plugins:maven-compiler-plugin:compile</compile>
-              <process-test-resources>org.apache.maven.plugins:maven-resources-plugin:testResources
-              </process-test-resources>
-              <test-compile>org.apache.maven.plugins:maven-compiler-plugin:testCompile</test-compile>
-              <test>org.apache.maven.plugins:maven-surefire-plugin:test</test>
 
               <!--
                 SonarQube specific step: wrap this module's single "sonar-plugin"-typed dependency's JAR (plus
