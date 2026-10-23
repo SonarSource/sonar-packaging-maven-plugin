@@ -9,6 +9,11 @@ on:
         description: 'Full version including build number, e.g. 1.2.3.456'
         type: string
         required: true
+      dryRun:
+        description: 'Run without publishing the release or artifacts'
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   release:
@@ -18,6 +23,7 @@ jobs:
     uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v7
     with:
       version: ${{ inputs.version }}
+      dryRun: ${{ inputs.dryRun }}
       publishToBinaries: false
       mavenCentralSync: true
       slackChannel: ops-ci-experience
