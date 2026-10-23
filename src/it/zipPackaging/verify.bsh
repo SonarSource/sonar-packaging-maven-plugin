@@ -2,26 +2,26 @@ import java.io.*;
 import java.util.jar.*;
 import java.util.zip.*;
 
-File jarFile = new File(basedir, "target/test-1.0.jar");
+File jarFile = new File(basedir, "plugin/target/test-plugin-1.0.jar");
 if (!jarFile.isFile()) {
   throw new FileNotFoundException("Could not find generated JAR: " + jarFile);
 }
 
-File zipFile = new File(basedir, "target/test-1.0.zip");
+File zipFile = new File(basedir, "zip/target/test-zip-1.0.zip");
 if (!zipFile.isFile()) {
   throw new FileNotFoundException("Could not find generated ZIP: " + zipFile);
 }
 
 ZipFile zip = new ZipFile(zipFile);
 try {
-  if (zip.getEntry("plugin/test-1.0.jar") == null) {
-    throw new FileNotFoundException("Zip does not contain plugin/test-1.0.jar");
+  if (zip.getEntry("plugin/test-plugin-1.0.jar") == null) {
+    throw new FileNotFoundException("Zip does not contain plugin/test-plugin-1.0.jar");
   }
-  if (zip.getEntry("resources/models/sample.txt") == null) {
-    throw new FileNotFoundException("Zip does not contain resources/models/sample.txt");
+  if (zip.getEntry("resources/static/models/sample.txt") == null) {
+    throw new FileNotFoundException("Zip does not contain resources/static/models/sample.txt");
   }
 
-  InputStream jarEntryStream = zip.getInputStream(zip.getEntry("plugin/test-1.0.jar"));
+  InputStream jarEntryStream = zip.getInputStream(zip.getEntry("plugin/test-plugin-1.0.jar"));
   try {
     JarInputStream innerJar = new JarInputStream(jarEntryStream);
     try {
@@ -37,21 +37,6 @@ try {
       if (!"1.0".equals(pluginVersion)) {
         throw new IllegalStateException("Expected Plugin-Version=1.0 in nested jar manifest, got: " + pluginVersion);
       }
-
-      // The project's <includes>org/**</includes> scopes the "sonar-plugin" goal's own jar sweep, independently of
-      // the "zip" goal's resources/ sweep (which always uses default include/exclude patterns). So the nested jar
-      // must NOT contain static/models/sample.txt, while the zip's resources/ entry (checked above) still does.
-      boolean staticEntryFoundInJar = false;
-      JarEntry entry;
-      while ((entry = innerJar.getNextJarEntry()) != null) {
-        if ("static/models/sample.txt".equals(entry.getName())) {
-          staticEntryFoundInJar = true;
-        }
-      }
-      if (staticEntryFoundInJar) {
-        throw new IllegalStateException("static/models/sample.txt should not be in the plugin JAR: "
-          + "the project's <includes>org/**</includes> scopes the jar to org/** only");
-      }
     } finally {
       innerJar.close();
     }
@@ -62,19 +47,9 @@ try {
   zip.close();
 }
 
-// Also verify the top-level jar (same file as plugin/test-1.0.jar inside the zip) is scoped the same way.
-ZipFile jar = new ZipFile(jarFile);
-try {
-  if (jar.getEntry("static/models/sample.txt") != null) {
-    throw new IllegalStateException("static/models/sample.txt should not be in target/test-1.0.jar: "
-      + "the project's <includes>org/**</includes> scopes the jar to org/** only");
-  }
-} finally {
-  jar.close();
-}
-
-// Since the resourcesDirectory content is scoped out of the JAR above, no "duplicated in the JAR" warning
-// should be logged (see the "zipPackagingDuplicateResources" fixture for the positive case).
+// The "plugin" module has no static resources of its own, so there's no overlap with the "zip" module's
+// resourcesDirectory: no "duplicated in the JAR" warning should be logged (see "zipPackagingDuplicateResources"
+// for that case).
 File log = new File(basedir, "build.log");
 if (!log.isFile()) {
   throw new FileNotFoundException("Could not find log file: " + log);

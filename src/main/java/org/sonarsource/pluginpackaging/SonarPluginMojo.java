@@ -216,6 +216,10 @@ public class SonarPluginMojo extends AbstractSonarMojo {
     }
   }
 
+  private static File getJarFile(File basedir, String finalName, String classifier) {
+    return new File(basedir, finalName + getClassifierSuffix(classifier) + ".jar");
+  }
+
   public File createArchive() {
     File jarFile = getJarFile(getOutputDirectory(), getFinalName(), getClassifier());
     MavenArchiver archiver = new MavenArchiver();
@@ -375,7 +379,7 @@ public class SonarPluginMojo extends AbstractSonarMojo {
   }
 
   private static boolean isSonarPlugin(Artifact artifact) {
-    return "sonar-plugin".equals(artifact.getType());
+    return SONAR_PLUGIN_TYPE.equals(artifact.getType());
   }
 
   private static boolean containsArtifact(Set<Artifact> artifacts, Artifact artifact) {

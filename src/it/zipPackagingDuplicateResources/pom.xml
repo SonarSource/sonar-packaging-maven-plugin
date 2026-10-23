@@ -6,54 +6,23 @@
   <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
   <artifactId>test</artifactId>
   <version>1.0</version>
-  <packaging>sonar-plugin</packaging>
+  <packaging>pom</packaging>
 
   <name>Zip Packaging Duplicate Resources</name>
   <description>Zip Packaging Duplicate Resources</description>
 
+  <!--
+    "plugin" independently ships the same static/models/sample.txt that "zip"'s resourcesDirectory also
+    contains, simulating an author accidentally duplicating the same resource across both modules. This is
+    what the "resources directory also packaged in the JAR" warning should detect.
+  -->
+  <modules>
+    <module>plugin</module>
+    <module>zip</module>
+  </modules>
+
   <properties>
-    <sonar.pluginKey>test</sonar.pluginKey>
-    <sonar.pluginClass>org.sonar.plugins.sample.SamplePlugin</sonar.pluginClass>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.source>1.8</maven.compiler.source>
+    <sonar-packaging-maven-plugin.version>@project.version@</sonar-packaging-maven-plugin.version>
+    <sonar.pluginApi.version>@sonar.pluginApi.version@</sonar.pluginApi.version>
   </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.sonarsource.api.plugin</groupId>
-      <artifactId>sonar-plugin-api</artifactId>
-      <version>@sonar.pluginApi.version@</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>@project.groupId@</groupId>
-        <artifactId>@project.artifactId@</artifactId>
-        <version>@project.version@</version>
-        <extensions>true</extensions>
-        <!--
-          No <includes> scoping here, unlike the "zipPackaging" fixture: the JAR packaging therefore picks up
-          src/main/resources/static (copied to target/classes/static by maven-resources-plugin) with its default
-          includes, the same content the "zip" goal copies into the ZIP's resources/. This duplication is what the
-          "resources directory also packaged in the JAR" warning should detect.
-        -->
-        <executions>
-          <execution>
-            <id>build-zip</id>
-            <goals>
-              <goal>zip</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.1</version>
-      </plugin>
-    </plugins>
-  </build>
 </project>
