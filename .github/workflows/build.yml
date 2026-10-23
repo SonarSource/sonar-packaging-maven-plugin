@@ -30,7 +30,7 @@ jobs:
       - uses: jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 # v5.2.0
         with:
           version: 2026.10.13
-      - uses: SonarSource/ci-github-actions/build-maven@1a7cb95099f6312741cec15c591e1932146ee4e5 # v2 (1.2.1)
+      - uses: SonarSource/ci-github-actions/build-maven@1a7cb95099f6312741cec15c591e1932146ee4e5 # v2 (2.4.0)
         with:
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
@@ -61,7 +61,7 @@ jobs:
         with:
           cache_save: false
           version: 2026.10.13
-      - uses: SonarSource/ci-github-actions/get-build-number@1a7cb95099f6312741cec15c591e1932146ee4e5 # v2 (1.2.1)
-      - uses: SonarSource/ci-github-actions/promote@1a7cb95099f6312741cec15c591e1932146ee4e5 # v2 (1.2.1)
+      - uses: SonarSource/ci-github-actions/get-build-number@1a7cb95099f6312741cec15c591e1932146ee4e5 # v2 (2.4.0)
+      - uses: SonarSource/ci-github-actions/promote@1a7cb95099f6312741cec15c591e1932146ee4e5 # v2 (2.4.0)
         with:
           promote-pull-request: true
