@@ -5,6 +5,7 @@
         <goals>
           <goal>sonar-plugin</goal>
           <goal>check</goal>
+          <goal>zip</goal>
         </goals>
       </pluginExecutionFilter>
       <action>

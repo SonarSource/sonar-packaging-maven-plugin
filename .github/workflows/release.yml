@@ -1,18 +1,16 @@
 ---
 name: sonar-release
-# Run this workflow with the full version to create and publish a draft release.
 # yamllint disable-line rule:truthy
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Full version including build number, e.g. 1.2.3.456'
         type: string
+        description: Full version including build number, e.g. 1.2.3.456
         required: true
       dryRun:
-        description: 'Run without publishing the release or artifacts'
         type: boolean
-        required: false
+        description: Flag to enable the dry-run execution
         default: false
 
 jobs:

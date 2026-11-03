@@ -6,54 +6,24 @@
   <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
   <artifactId>test</artifactId>
   <version>1.0</version>
-  <packaging>sonar-plugin</packaging>
+  <packaging>pom</packaging>
 
   <name>Zip Packaging</name>
   <description>Zip Packaging</description>
 
+  <!--
+    Two modules: "plugin" builds the plugin JAR (<packaging>sonar-plugin</packaging>, unchanged), "zip" depends
+    on it and wraps it into a ZIP (<packaging>sonar-plugin-zip</packaging>). Maven's reactor always finishes
+    building "plugin" before "zip" starts, since "zip" declares a dependency on it, so no ordering configuration
+    is needed anywhere.
+  -->
+  <modules>
+    <module>plugin</module>
+    <module>zip</module>
+  </modules>
+
   <properties>
-    <sonar.pluginKey>test</sonar.pluginKey>
-    <sonar.pluginClass>org.sonar.plugins.sample.SamplePlugin</sonar.pluginClass>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.source>1.8</maven.compiler.source>
+    <sonar-packaging-maven-plugin.version>@project.version@</sonar-packaging-maven-plugin.version>
+    <sonar.pluginApi.version>@sonar.pluginApi.version@</sonar.pluginApi.version>
   </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.sonarsource.api.plugin</groupId>
-      <artifactId>sonar-plugin-api</artifactId>
-      <version>@sonar.pluginApi.version@</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>@project.groupId@</groupId>
-        <artifactId>@project.artifactId@</artifactId>
-        <version>@project.version@</version>
-        <extensions>true</extensions>
-        <configuration>
-          <!-- Scoped to the JAR's classesDirectory sweep only; must not affect the ZIP's resources/ content. -->
-          <includes>
-            <include>org/**</include>
-          </includes>
-        </configuration>
-        <executions>
-          <execution>
-            <id>build-zip</id>
-            <goals>
-              <goal>zip</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.1</version>
-      </plugin>
-    </plugins>
-  </build>
 </project>

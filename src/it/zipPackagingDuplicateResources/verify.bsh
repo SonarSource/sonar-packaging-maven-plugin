@@ -3,21 +3,22 @@ import java.nio.file.*;
 import java.util.jar.*;
 import java.util.zip.*;
 
-File jarFile = new File(basedir, "target/test-1.0.jar");
+File jarFile = new File(basedir, "plugin/target/test-plugin-1.0.jar");
 if (!jarFile.isFile()) {
   throw new FileNotFoundException("Could not find generated JAR: " + jarFile);
 }
 
-File zipFile = new File(basedir, "target/test-1.0.zip");
+File zipFile = new File(basedir, "zip/target/test-zip-1.0.zip");
 if (!zipFile.isFile()) {
   throw new FileNotFoundException("Could not find generated ZIP: " + zipFile);
 }
 
-// Confirm the premise: with no <includes> scoping, the resourcesDirectory content ends up in both artifacts.
+// Confirm the premise: the "plugin" module independently ships the same static resource the "zip" module's
+// resourcesDirectory also contains, so the content really is duplicated across both artifacts.
 ZipFile jar = new ZipFile(jarFile);
 try {
   if (jar.getEntry("static/models/sample.txt") == null) {
-    throw new IllegalStateException("static/models/sample.txt should be present in target/test-1.0.jar "
+    throw new IllegalStateException("static/models/sample.txt should be present in plugin/target/test-plugin-1.0.jar "
       + "for this duplication scenario to be meaningful");
   }
 } finally {
@@ -26,8 +27,8 @@ try {
 
 ZipFile zip = new ZipFile(zipFile);
 try {
-  if (zip.getEntry("resources/models/sample.txt") == null) {
-    throw new FileNotFoundException("Zip does not contain resources/models/sample.txt");
+  if (zip.getEntry("resources/static/models/sample.txt") == null) {
+    throw new FileNotFoundException("Zip does not contain resources/static/models/sample.txt");
   }
 } finally {
   zip.close();
@@ -44,7 +45,7 @@ for (String line : Files.readAllLines(log.toPath())) {
   if (line.startsWith("[WARNING]")
     && line.contains("is also packaged inside the plugin JAR")
     && line.contains("included twice")
-    && line.contains("moved out of the JAR")) {
+    && line.contains("Remove those resources from the plugin module")) {
     found = true;
   }
 }
