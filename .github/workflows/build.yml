@@ -27,9 +27,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 # v5.2.0
+      - uses: SonarSource/mise-action-wrapper@65aa289d3f408f4999d13a52a14cde4f54b48442 # 2.0.0
         with:
           version: 2026.10.13
+          persist_github_token: false
       - uses: SonarSource/ci-github-actions/build-maven@1a7cb95099f6312741cec15c591e1932146ee4e5 # v2 (2.4.0)
         with:
           artifactory-reader-role: private-reader
@@ -57,7 +58,7 @@ jobs:
     name: Promote
     steps:
       - *checkout
-      - uses: jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 # v5.2.0
+      - uses: step-security/mise-action@a225bbd7c202ddf57dd76dff22bb7992f6314173 # v5.1.2
         with:
           cache_save: false
           version: 2026.10.13
